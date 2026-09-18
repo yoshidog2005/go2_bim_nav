@@ -15,6 +15,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 # System packages (least-frequently changing -> early layer for good caching)
 #   - rmw_cyclonedds_cpp: CycloneDDS RMW for ROS 2 (apt-installable on Humble;
 #     no need to compile from source as on Foxy)
+#   - git: needed to clone the Unitree SDK from source
 #   - iproute2 / iputils-ping / net-tools: interface + connectivity debugging
 #     (useful given the DDS/interface work on this robot)
 #   - vim, tmux, less: quality-of-life inside the container
@@ -23,6 +24,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y --no-install-recommends \
         ros-humble-rmw-cyclonedds-cpp \
         ros-humble-rosidl-generator-dds-idl \
+        git \
         iproute2 \
         iputils-ping \
         net-tools \
@@ -39,6 +41,23 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # ---------------------------------------------------------------------------
 COPY requirements.txt /tmp/requirements.txt
 RUN pip3 install --no-cache-dir -r /tmp/requirements.txt
+
+# ---------------------------------------------------------------------------
+# Unitree SDK2 Python interface (talks to the Go2 MCU over CycloneDDS).
+# Clones master (most recent commit) and installs non-editable.
+#
+# The SDK's install needs to locate CycloneDDS, or it fails with
+# "Could not locate cyclonedds. Try to set CYCLONEDDS_HOME". CYCLONEDDS_HOME
+# below is a best guess for this base image (CycloneDDS ships under the ROS
+# install). If the build fails on this step, get into the base image and run:
+#     find / -name "libddsc.so*" 2>/dev/null
+# then correct the CYCLONEDDS_HOME path to the directory that CONTAINS lib/ and
+# include/ for CycloneDDS, and rebuild.
+# ---------------------------------------------------------------------------
+ENV CYCLONEDDS_HOME=/opt/ros/humble
+RUN git clone https://github.com/unitreerobotics/unitree_sdk2_python.git /opt/unitree_sdk2_python \
+    && cd /opt/unitree_sdk2_python \
+    && pip3 install --no-cache-dir .
 
 # ---------------------------------------------------------------------------
 # Your ROS 2 workspace / code
