@@ -3,8 +3,7 @@
 # Target host: Unitree Go2 Jetson (aarch64), L4T R35 series.
 #
 # Base image: dustynv/ros humble-ros-base for L4T r35.3.1 (exact match to host L4T).
-# Pinned by digest for reproducibility; the tag is kept in the comment for readability.
-FROM dustynv/ros:humble-ros-base-l4t-r35.3.1@sha256:0a43789d92801cebbc7510fe8fd7acdfc16f8c62e56790435a89a596f9b7c3ba
+FROM dustynv/ros:humble-ros-base-l4t-r35.3.1
 
 # Use bash so we can 'source' ROS setup files in RUN steps.
 SHELL ["/bin/bash", "-c"]
@@ -42,18 +41,7 @@ COPY requirements.txt /tmp/requirements.txt
 RUN pip3 install --no-cache-dir -r /tmp/requirements.txt
 
 # ---------------------------------------------------------------------------
-# DDS / ROS runtime configuration
-# NOTE: interface binding is intentionally NOT hardcoded here. RMW is set to
-# CycloneDDS, but ROS_DOMAIN_ID and CYCLONEDDS_URI are chosen at RUN time so the
-# same image can serve both the MCU side (domain 0) and the ROS 2 side
-# (domain 2) with different interface bindings. A default CycloneDDS config that
-# binds ROS 2 to the Wi-Fi interface is shipped to /config for convenience.
-# ---------------------------------------------------------------------------
-ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
-COPY config/ /config/
-
-# ---------------------------------------------------------------------------
-# Your ROS 2 workspace / code (most-frequently changing -> latest layer).
+# Your ROS 2 workspace / code
 # Uncomment and adapt once you have a workspace to build.
 # ---------------------------------------------------------------------------
 # COPY ros_ws/ /root/ros_ws/
