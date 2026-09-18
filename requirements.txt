@@ -1,10 +1,6 @@
 # Python dependencies for humble_base
 # Base image already provides Python 3.10 and a Jetson numpy/opencv stack,
 # so keep this minimal and add only what you actually import.
-#
-# The Unitree SDK2 Python interface (talks to the Go2 MCU over CycloneDDS).
-# Pin a version once you know which one you want; unpinned pulls the latest.
-unitree_sdk2py
 
 # Add project-specific deps below, ideally pinned, e.g.:
 # numpy==1.24.4
