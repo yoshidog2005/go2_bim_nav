@@ -1,0 +1,12 @@
+# Keep the build context small and avoid baking junk/secrets into the image.
+.git
+.gitignore
+README.md
+**/__pycache__/
+*.pyc
+*.pyo
+*.log
+# Build artifacts if you later add a workspace:
+ros_ws/build/
+ros_ws/install/
+ros_ws/log/
