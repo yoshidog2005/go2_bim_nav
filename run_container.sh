@@ -17,7 +17,7 @@
 # instead of "I have no name!"; the container gains nothing from it.
 set -e
 
-IMAGE="${IMAGE:-humble_base:test}"
+IMAGE="${IMAGE:-humble_desktop:test}"
 
 # Held in an array rather than a backslash-continued command so each flag can
 # carry its own comment (a trailing comment is a syntax error after a '\').
@@ -31,6 +31,22 @@ DOCKER_ARGS=(
     -v "$HOME:$HOME"                # your whole home, at the same path inside and out
     -e HOME="$HOME"                 # image default is /root, which uid 1000 cannot write
     -w "$HOME"                      # start in your home instead of /
+    # GUI apps (rviz2). The container runs as your uid with your $HOME mounted at
+    # the same path, so your existing ~/.Xauthority cookie is already valid --
+    # no 'xhost +' needed. --runtime nvidia gives OGRE the Jetson GPU; without it
+    # rviz falls back to software GL and crawls.
+    -e DISPLAY                      # which X server to draw on
+    -e XAUTHORITY="$HOME/.Xauthority"
+    -v /tmp/.X11-unix:/tmp/.X11-unix:rw
+    --runtime nvidia
+    # --user drops every supplementary group, so the container loses 'video'
+    # (gid 44), which owns /dev/nvmap and /dev/nvhost-*. Without these the Jetson
+    # GPU is unreachable and rviz dies with:
+    #   NvRmMemInitNvmap failed with Permission denied ... Segmentation fault
+    # Numeric gids are used because the container's /etc/group need not agree
+    # with the host's naming; the kernel checks the number.
+    --group-add 44                  # video
+    --group-add 103                 # render
 )
 
 exec docker run "${DOCKER_ARGS[@]}" "$IMAGE" "$@"

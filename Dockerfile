@@ -1,13 +1,19 @@
 # humble_base
-# Ubuntu 22.04 + ROS 2 Humble + Python 3.10, built for NVIDIA Jetson (L4T R35.3.1 / JetPack 5.1.1)
+# Ubuntu 20.04 + ROS 2 Humble + Python 3.8, built for NVIDIA Jetson (L4T R35.3.1 / JetPack 5.1.1)
 # Target host: Unitree Go2 Jetson (aarch64), L4T R35 series.
 #
-# Base image: dustynv/ros humble-ros-base for L4T r35.3.1 (exact match to host L4T).
+# Base image: dustynv/ros humble-DESKTOP for L4T r35.3.1 (exact match to host L4T).
+# The desktop variant is used instead of ros-base because it is the REP-2001
+# variant that contains rviz2 (at /opt/ros/humble/install/bin/rviz2), so the
+# LiDAR can be visualised on the robot itself rather than on a laptop.
+#
 # NOTE: this image builds ROS Humble from source under /opt/ros/humble/install/
-# (NOT the Debian /opt/ros/humble/{lib,setup.bash} layout), and it already ships
-# rmw_cyclonedds_cpp as the default RMW. Its apt sources point at 'focal', so
-# ros-humble-* Debian packages are NOT apt-installable here -- don't add them.
-FROM dustynv/ros:humble-ros-base-l4t-r35.3.1
+# in a MERGED layout (bin/, lib/, share/ at the top level -- no per-package
+# directories, and NOT the Debian /opt/ros/humble/{lib,setup.bash} layout). It
+# already ships rmw_cyclonedds_cpp as the default RMW. Its apt sources point at
+# 'focal', so ros-humble-* Debian packages are NOT apt-installable here --
+# don't add them.
+FROM dustynv/ros:humble-desktop-l4t-r35.3.1
 
 # Use bash so we can 'source' ROS setup files in RUN steps.
 SHELL ["/bin/bash", "-c"]
@@ -79,6 +85,19 @@ RUN git clone https://github.com/unitreerobotics/unitree_sdk2_python.git /opt/un
 # start of a line, otherwise ENV parses it as another name=value pair.
 # ---------------------------------------------------------------------------
 ENV RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+
+# ---------------------------------------------------------------------------
+# Only use Python packages that are built into this image.
+# run_container.sh mounts the host $HOME, which exposes the host's
+# ~/.local/lib/python3.8/site-packages ("user site"). Python searches the user
+# site BEFORE /usr/local/lib/python3.8/dist-packages, so any host
+# `pip install --user` silently shadows the image's packages. An old host
+# install of unitree_sdk2py + cyclonedds did exactly that, and the host-built
+# cyclonedds binding segfaulted against this image's CycloneDDS library.
+# Disabling the user site also stops its .pth files (e.g. easy-install.pth)
+# from adding host paths.
+# ---------------------------------------------------------------------------
+ENV PYTHONNOUSERSITE=1
 
 # ---------------------------------------------------------------------------
 # Your ROS 2 workspace / code
