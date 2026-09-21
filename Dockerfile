@@ -3,6 +3,10 @@
 # Target host: Unitree Go2 Jetson (aarch64), L4T R35 series.
 #
 # Base image: dustynv/ros humble-ros-base for L4T r35.3.1 (exact match to host L4T).
+# NOTE: this image builds ROS Humble from source under /opt/ros/humble/install/
+# (NOT the Debian /opt/ros/humble/{lib,setup.bash} layout), and it already ships
+# rmw_cyclonedds_cpp as the default RMW. Its apt sources point at 'focal', so
+# ros-humble-* Debian packages are NOT apt-installable here -- don't add them.
 FROM dustynv/ros:humble-ros-base-l4t-r35.3.1
 
 # Use bash so we can 'source' ROS setup files in RUN steps.
@@ -12,18 +16,24 @@ SHELL ["/bin/bash", "-c"]
 ARG DEBIAN_FRONTEND=noninteractive
 
 # ---------------------------------------------------------------------------
-# System packages (least-frequently changing -> early layer for good caching)
-#   - rmw_cyclonedds_cpp: CycloneDDS RMW for ROS 2 (apt-installable on Humble;
-#     no need to compile from source as on Foxy)
+# Refresh the ROS apt signing key.
+# This base image predates the June-2025 ROS GPG key rotation, so its baked-in
+# key is expired and 'apt-get update' fails with EXPKEYSIG F42ED6FBAB17C654.
+# Overwriting the keyring with the current key from the ROS distro repo fixes it.
+# ---------------------------------------------------------------------------
+RUN curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key \
+        -o /usr/share/keyrings/ros-archive-keyring.gpg
+
+# ---------------------------------------------------------------------------
+# System packages (plain Ubuntu tools only).
 #   - git: needed to clone the Unitree SDK from source
 #   - iproute2 / iputils-ping / net-tools: interface + connectivity debugging
 #     (useful given the DDS/interface work on this robot)
 #   - vim, tmux, less: quality-of-life inside the container
+# CycloneDDS RMW is already built into the base image, so it is NOT listed here.
 # Clean apt lists in the SAME layer so the cache doesn't bloat the image.
 # ---------------------------------------------------------------------------
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        ros-humble-rmw-cyclonedds-cpp \
-        ros-humble-rosidl-generator-dds-idl \
         git \
         iproute2 \
         iputils-ping \
@@ -47,24 +57,35 @@ RUN pip3 install --no-cache-dir -r /tmp/requirements.txt
 # Clones master (most recent commit) and installs non-editable.
 #
 # The SDK's install needs to locate CycloneDDS, or it fails with
-# "Could not locate cyclonedds. Try to set CYCLONEDDS_HOME". CYCLONEDDS_HOME
-# below is a best guess for this base image (CycloneDDS ships under the ROS
-# install). If the build fails on this step, get into the base image and run:
+# "Could not locate cyclonedds. Try to set CYCLONEDDS_HOME". This image builds
+# ROS (and CycloneDDS) under /opt/ros/humble/install/, so CYCLONEDDS_HOME is set
+# there as the best guess. If the build fails on this step, locate the library:
 #     find / -name "libddsc.so*" 2>/dev/null
-# then correct the CYCLONEDDS_HOME path to the directory that CONTAINS lib/ and
-# include/ for CycloneDDS, and rebuild.
+# and set CYCLONEDDS_HOME to the prefix that CONTAINS lib/libddsc.so (and its
+# include/), then rebuild.
 # ---------------------------------------------------------------------------
-ENV CYCLONEDDS_HOME=/opt/ros/humble
+ENV CYCLONEDDS_HOME=/opt/ros/humble/install
 RUN git clone https://github.com/unitreerobotics/unitree_sdk2_python.git /opt/unitree_sdk2_python \
     && cd /opt/unitree_sdk2_python \
     && pip3 install --no-cache-dir .
+
+# ---------------------------------------------------------------------------
+# DDS / ROS runtime default.
+# The base image ships rmw_cyclonedds_cpp as its default. Override it with Fast
+# DDS, which is stock ROS 2's default, so external machines running an untouched
+# Humble install interoperate without configuring anything on their end.
+# Interface binding / domain / peers are chosen at RUN time, not baked in.
+# NOTE: Dockerfiles have no trailing comments -- a '#' is only a comment at the
+# start of a line, otherwise ENV parses it as another name=value pair.
+# ---------------------------------------------------------------------------
+ENV RMW_IMPLEMENTATION=rmw_fastrtps_cpp
 
 # ---------------------------------------------------------------------------
 # Your ROS 2 workspace / code
 # Uncomment and adapt once you have a workspace to build.
 # ---------------------------------------------------------------------------
 # COPY ros_ws/ /root/ros_ws/
-# RUN source /opt/ros/humble/setup.bash \
+# RUN source /opt/ros/humble/install/setup.bash \
 #     && cd /root/ros_ws \
 #     && colcon build --symlink-install
 

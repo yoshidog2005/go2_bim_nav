@@ -5,11 +5,13 @@
 set -e
 
 # ROS 2 Humble
-source /opt/ros/humble/setup.bash
+source /opt/ros/humble/install/setup.bash
 
 # Project overlay workspace (only if it was built into the image)
 if [ -f /root/ros_ws/install/setup.bash ]; then
     source /root/ros_ws/install/setup.bash
 fi
+
+export ROS_DOMAIN_ID=1
 
 exec "$@"
