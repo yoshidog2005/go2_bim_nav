@@ -1,0 +1,16 @@
+# Waypoints in the BIM/map coordinate frame (metres, radians).
+# These are EXAMPLES - don't trust these numbers. Get real values with:
+#   ros2 run go2_bim_nav list_spaces --input model.ifc
+#
+# Then use with:
+#   ros2 run go2_bim_nav send_goal --waypoint kitchen --waypoints-file config/waypoints.yaml
+
+kitchen:
+  x: 3.5
+  y: 1.2
+  yaw: 0.0
+
+entrance:
+  x: 0.0
+  y: 0.0
+  yaw: 1.57

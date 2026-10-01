@@ -1,0 +1,11 @@
+# For running ifc_to_map.py / list_spaces.py on your workstation - NOT for
+# the dog's companion computer. Neither script imports rclpy or anything
+# ROS-specific, so this doesn't need ROS2 installed at all, just Python 3.9+.
+#
+#   python3 -m venv bim_env && source bim_env/bin/activate
+#   pip install -r requirements-workstation.txt
+#   python go2_bim_nav/ifc_to_map.py --input model.ifc --output bim_map
+#
+ifcopenshell
+numpy
+Pillow
