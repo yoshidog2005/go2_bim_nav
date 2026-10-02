@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""List IfcSpace names with their (x, y) centroid in world coordinates.
+"""
+@author Brandon Lichter (Yoshidog)
+
+List IfcSpace names with their (x, y) centroid in world coordinates.
 
 Use this to find real map-frame coordinates for named rooms/areas instead
 of guessing, when building a config/waypoints.yaml for send_goal.

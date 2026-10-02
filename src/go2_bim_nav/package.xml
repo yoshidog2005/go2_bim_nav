@@ -9,7 +9,7 @@
     and the Go2's onboard lidar supplies a live dynamic obstacle layer on
     top of it for people, boxes, furniture, and closed doors.
   </description>
-  <maintainer email="you@example.com">your_name</maintainer>
+  <maintainer email="brandotl@icloud.com">brandon</maintainer>
   <license>Apache-2.0</license>
 
   <buildtool_depend>ament_python</buildtool_depend>
@@ -20,20 +20,31 @@
   <exec_depend>nav2_amcl</exec_depend>
   <exec_depend>nav2_controller</exec_depend>
   <exec_depend>nav2_planner</exec_depend>
-  <exec_depend>nav2_recoveries</exec_depend>
+  <exec_depend>nav2_behaviors</exec_depend>
   <exec_depend>nav2_bt_navigator</exec_depend>
   <exec_depend>nav2_costmap_2d</exec_depend>
   <exec_depend>nav2_lifecycle_manager</exec_depend>
   <exec_depend>nav2_msgs</exec_depend>
+  <exec_depend>nav2_navfn_planner</exec_depend>
+  <exec_depend>nav2_waypoint_follower</exec_depend>
+  <exec_depend>nav2_util</exec_depend>
   <exec_depend>action_msgs</exec_depend>
   <exec_depend>geometry_msgs</exec_depend>
   <exec_depend>nav_msgs</exec_depend>
   <exec_depend>tf2_ros</exec_depend>
+  <exec_depend>tf2_geometry_msgs</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>python3-yaml</exec_depend>
   <exec_depend>pointcloud_to_laserscan</exec_depend>
   <exec_depend>launch</exec_depend>
   <exec_depend>launch_ros</exec_depend>
 
   <!--
+    Targets ROS 2 Humble built from source on Ubuntu 20.04 / Python 3.8
+    (dustynv L4T image). rosdep can NOT apt-install ros-humble-* there, so
+    these exec_depends document what must already exist in the image
+    (check: ros2 pkg list | grep nav2). nav2_recoveries was renamed nav2_behaviors after Foxy.
+
     cmd_vel_bridge.py also depends on the `unitree_api` message package
     (for unitree_api/msg/Request), built as part of unitree_ros2 - NOT
     listed as an exec_depend here since it's not a rosdep-resolvable

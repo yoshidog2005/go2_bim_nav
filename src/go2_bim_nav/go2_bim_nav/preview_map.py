@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Preview a map_server map (.pgm + .yaml) on your workstation - no ROS2,
+"""
+@author Brandon Lichter (Yoshidog)
+
+Preview a map_server map (.pgm + .yaml) on your workstation - no ROS2,
 no rviz2, no dog required. A quick sanity check before copying the map
 over: does this actually look like the floor plan, at the right scale
 and proportions?

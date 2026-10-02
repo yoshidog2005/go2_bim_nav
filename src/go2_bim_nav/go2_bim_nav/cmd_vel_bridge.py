@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Bridge Nav2's /cmd_vel (geometry_msgs/msg/Twist) to the Go2's native
+"""
+@author Brandon Lichter (Yoshidog)
+
+Bridge Nav2's /cmd_vel (geometry_msgs/msg/Twist) to the Go2's native
 Sport API (/api/sport/request, unitree_api/msg/Request).
 
 This is NOT a guessed schema - it's a direct translation of this robot's

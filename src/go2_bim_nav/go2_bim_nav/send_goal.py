@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Send a NavigateToPose goal to Nav2 - this is the "go here" input.
+"""
+@author Brandon Lichter (Yoshidog)
+
+Send a NavigateToPose goal to Nav2 - this is the "go here" input.
 
 Everything else in this package (map, costmaps, planners) only reacts once
 something calls the bt_navigator's navigate_to_pose action. This script is

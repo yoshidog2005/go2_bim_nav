@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Convert an IFC/BIM model into a ROS 2 map_server occupancy grid.
+"""
+@author Brandon Lichter (Yoshidog)
+
+Convert an IFC/BIM model into a ROS 2 map_server occupancy grid.
 
 The output (.pgm + .yaml) is treated as ground truth by the static costmap
 layer. Only permanent, structural elements are rasterised here - anything

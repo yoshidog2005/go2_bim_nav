@@ -2,6 +2,13 @@
 # Base image already provides Python 3.10 and a Jetson numpy/opencv stack,
 # so keep this minimal and add only what you actually import.
 
-# Add project-specific deps below, ideally pinned, e.g.:
-# numpy==1.24.4
-# opencv-python==4.8.1.78
+# --- go2_bim_nav runtime ---
+PyYAML==5.3.1        # matches the apt/distutils copy already in the image; pip can't replace it
+numpy==1.24.4        # last numpy supporting Python 3.8
+ 
+# --- build tooling used by the Dockerfile ---
+setuptools==58.2.0   # Humble-era pin; avoids the importlib_metadata EntryPoints crash
+vcstool==0.3.0
+rosdep==0.27.0
+rosdistro==1.1.0
+catkin_pkg==1.1.1

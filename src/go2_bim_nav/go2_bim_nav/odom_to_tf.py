@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Broadcast /utlidar/robot_odom (nav_msgs/msg/Odometry) as a real
+"""
+@author Brandon Lichter (Yoshidog)
+
+Broadcast /utlidar/robot_odom (nav_msgs/msg/Odometry) as a real
 odom -> base_link tf transform.
 
 Confirmed directly from this robot (ros2 topic echo /utlidar/robot_odom):
