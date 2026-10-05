@@ -121,6 +121,7 @@ RUN source /opt/ros/humble/install/setup.bash && \
     for p in nav2_bringup nav2_map_server nav2_amcl nav2_controller nav2_planner \
              nav2_behaviors nav2_bt_navigator nav2_costmap_2d nav2_lifecycle_manager \
              nav2_msgs nav2_navfn_planner nav2_waypoint_follower nav2_util \
+             nav2_smoother nav2_velocity_smoother \
              pointcloud_to_laserscan tf2_ros tf2_geometry_msgs; do \
         ros2 pkg prefix "$p" >/dev/null 2>&1 || MISSING="$MISSING $p"; \
     done && \

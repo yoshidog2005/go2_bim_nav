@@ -17,7 +17,16 @@
 # instead of "I have no name!"; the container gains nothing from it.
 set -e
 
-IMAGE="${IMAGE:-humble_desktop:test}"
+IMAGE="${IMAGE:-bim_nav:latest}"   # build with: docker build -t bim_nav:latest .
+
+# $HOME is mounted, so an interactive bash would source the HOST's ~/.bashrc -
+# which typically sources unitree_ros2's Foxy setup.sh and puts a Foxy-built
+# librmw_cyclonedds_cpp.so ahead of Humble's (-> segfault in ros2 CLI).
+# --norc skips it; the image's entrypoint does the sourcing instead.
+# (Docker doesn't inherit your host shell's env, so --norc is what keeps Foxy out.)
+if [ $# -eq 0 ]; then
+    set -- bash --norc
+fi
 
 # Held in an array rather than a backslash-continued command so each flag can
 # carry its own comment (a trailing comment is a syntax error after a '\').
@@ -47,6 +56,8 @@ DOCKER_ARGS=(
     # with the host's naming; the kernel checks the number.
     --group-add 44                  # video
     --group-add 103                 # render
+    -e UNITREE_ROS2_WS              # optional: HUMBLE-built unitree_ros2 ws (for unitree_api); Foxy builds are refused
+    -e ROS_DOMAIN_ID                # optional override (entrypoint default is 1)
 )
 
 exec docker run "${DOCKER_ARGS[@]}" "$IMAGE" "$@"

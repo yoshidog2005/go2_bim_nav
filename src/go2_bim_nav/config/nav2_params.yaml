@@ -56,53 +56,16 @@ bt_navigator:
     odom_topic: /utlidar/robot_odom
     bt_loop_duration: 10
     default_server_timeout: 20
-    # Foxy's stock nav2_bt_navigator has a long-standing packaging bug -
-    # its built-in default tree references a "ChangeGoal" BT node whose
-    # plugin .so isn't shipped in the Foxy binaries, crashing bt_navigator
-    # on startup (ros-navigation/navigation2 issues #2143, #2919, #3521 -
-    # reported independently for years, never fixed at the binary level).
-    # Confirmed on this robot: none of the installed trees reference
-    # ChangeGoal (grep came back empty), so pointing at one explicitly
-    # sidesteps the bug entirely rather than hitting whatever the
-    # C++-internal fallback resolves to when this is left unset.
-    default_bt_xml_filename: "/opt/ros/foxy/share/nav2_bt_navigator/behavior_trees/navigate_w_replanning_and_recovery.xml"
-    # default_bt_xml_filename alone wasn't enough - bt_navigator's internal
-    # default plugin list still tried to load libnav2_change_goal_node_bt_node.so
-    # regardless of which tree was selected, and that .so was never shipped
-    # in Foxy's binaries at all (confirmed via `ls /opt/ros/foxy/lib/ | grep
-    # bt_node` on this robot - it's genuinely absent, not just failing to
-    # load). Listed explicitly here, built directly from that same `ls`
-    # output, so nothing outside what's actually installed is ever attempted.
-    plugin_lib_names:
-      - nav2_back_up_action_bt_node
-      - nav2_clear_costmap_service_bt_node
-      - nav2_compute_path_to_pose_action_bt_node
-      - nav2_distance_controller_bt_node
-      - nav2_distance_traveled_condition_bt_node
-      - nav2_follow_path_action_bt_node
-      - nav2_goal_reached_condition_bt_node
-      - nav2_goal_updated_condition_bt_node
-      - nav2_goal_updater_node_bt_node
-      - nav2_initial_pose_received_condition_bt_node
-      - nav2_is_battery_low_condition_bt_node
-      - nav2_is_stuck_condition_bt_node
-      - nav2_navigate_to_pose_action_bt_node
-      - nav2_pipeline_sequence_bt_node
-      - nav2_rate_controller_bt_node
-      - nav2_recovery_node_bt_node
-      - nav2_reinitialize_global_localization_service_bt_node
-      - nav2_round_robin_node_bt_node
-      - nav2_speed_controller_bt_node
-      - nav2_spin_action_bt_node
-      - nav2_time_expired_condition_bt_node
-      - nav2_transform_available_condition_bt_node
-      - nav2_truncate_path_action_bt_node
-      - nav2_wait_action_bt_node
+    # Humble: the Foxy ChangeGoal workaround (default_bt_xml_filename +
+    # plugin_lib_names) was removed on purpose. Humble ships its own default
+    # trees and plugin list, and the old Foxy plugin list lacks plugins
+    # Humble's trees need (e.g. compute_path_through_poses).
 
 controller_server:
   ros__parameters:
     use_sim_time: false
     controller_frequency: 20.0
+    odom_topic: /utlidar/robot_odom  # Humble: controller_server subscribes to odom directly
     min_x_velocity_threshold: 0.05
     min_y_velocity_threshold: 0.5
     min_theta_velocity_threshold: 0.001
@@ -244,23 +207,63 @@ planner_server:
       use_astar: true
       allow_unknown: false   # don't route through unmapped space - the BIM is ground truth
 
-recoveries_server:
+behavior_server:
   ros__parameters:
+    use_sim_time: false
     costmap_topic: local_costmap/costmap_raw
     footprint_topic: local_costmap/published_footprint
     cycle_frequency: 10.0
-    recovery_plugins: ["spin", "backup", "wait"]
+    behavior_plugins: ["spin", "backup", "wait"]
     spin:
-      plugin: "nav2_recoveries/Spin"
+      plugin: "nav2_behaviors/Spin"
     backup:
-      plugin: "nav2_recoveries/BackUp"
+      plugin: "nav2_behaviors/BackUp"
     wait:
-      plugin: "nav2_recoveries/Wait"
-    global_frame: odom
+      plugin: "nav2_behaviors/Wait"
+    local_costmap_frame: odom
+    global_costmap_frame: map
     robot_base_frame: base_link
-    transform_timeout: 0.1
-    use_sim_time: false
+    transform_tolerance: 0.1
     simulate_ahead_time: 2.0
     max_rotational_vel: 1.0
     min_rotational_vel: 0.4
     rotational_acc_lim: 3.2
+
+# Humble's navigation_launch.py also starts these three nodes.
+smoother_server:
+  ros__parameters:
+    use_sim_time: false
+    smoother_plugins: ["simple_smoother"]
+    simple_smoother:
+      plugin: "nav2_smoother::SimpleSmoother"
+      tolerance: 1.0e-10
+      max_its: 1000
+      do_refinement: true
+
+waypoint_follower:
+  ros__parameters:
+    use_sim_time: false
+    loop_rate: 20
+    stop_on_failure: false
+    waypoint_task_executor_plugin: "wait_at_waypoint"
+    wait_at_waypoint:
+      plugin: "nav2_waypoint_follower::WaitAtWaypoint"
+      enabled: true
+      waypoint_pause_duration: 200
+
+# Humble routes controller output cmd_vel_nav -> velocity_smoother -> /cmd_vel,
+# which is what cmd_vel_bridge listens on. Limits mirror the DWB limits above.
+velocity_smoother:
+  ros__parameters:
+    use_sim_time: false
+    smoothing_frequency: 20.0
+    scale_velocities: false
+    feedback: "OPEN_LOOP"
+    max_velocity: [0.8, 0.0, 1.0]
+    min_velocity: [-0.4, 0.0, -1.0]
+    max_accel: [1.0, 0.0, 2.0]
+    max_decel: [-1.0, 0.0, -2.0]
+    odom_topic: "/utlidar/robot_odom"
+    odom_duration: 0.1
+    deadband_velocity: [0.0, 0.0, 0.0]
+    velocity_timeout: 1.0
