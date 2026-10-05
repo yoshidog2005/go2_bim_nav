@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>go2_bim_nav Overall Flow</title>
+<style>
+  :root {
+    --bg: #f7f6f2;
+    --surface: #ffffff;
+    --ink: #1d1d1b;
+    --muted: #5f5e58;
+    --line: #d9d6cc;
+    --arrow: #8a877c;
+    --ws: #2f6f9f;      --ws-soft: #e6f0f7;
+    --dog: #3a7d44;     --dog-soft: #e8f3ea;
+    --fw: #a35a1f;      --fw-soft: #f8ece1;
+    --nav: #6b4fa0;     --nav-soft: #efeaf7;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #161614;
+      --surface: #201f1c;
+      --ink: #ecebe6;
+      --muted: #a8a69d;
+      --line: #3a3934;
+      --arrow: #8d8a80;
+      --ws: #7fb4dc;      --ws-soft: #1b2a35;
+      --dog: #86c48f;     --dog-soft: #1c2b1f;
+      --fw: #e2a06a;      --fw-soft: #34261a;
+      --nav: #b8a2e3;     --nav-soft: #2a2336;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 15px/1.5 var(--sans);
+  }
+  main { max-width: 1180px; margin: 0 auto; padding: 32px 16px 56px; }
+  h1 { font-size: 1.6rem; margin: 0 0 4px; letter-spacing: -0.01em; }
+  h2 { font-size: 1.1rem; margin: 40px 0 12px; }
+  .lede { color: var(--muted); margin: 0 0 24px; max-width: 70ch; }
+  code, .mono { font-family: var(--mono); font-size: 0.86em; }
+
+  /* ---- Stage row ---- */
+  .stages { display: flex; align-items: stretch; gap: 0; }
+  .stage {
+    flex: 1 1 0;
+    min-width: 0;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-top: 4px solid var(--c);
+    border-radius: 10px;
+    padding: 14px 14px 16px;
+  }
+  .stage.ws  { --c: var(--ws);  --soft: var(--ws-soft); }
+  .stage.dog { --c: var(--dog); --soft: var(--dog-soft); flex-grow: 1.5; }
+  .stage.fw  { --c: var(--fw);  --soft: var(--fw-soft); flex-grow: 0.8; }
+  .stage h3 { margin: 0; font-size: 1rem; color: var(--c); }
+  .stage .sub { margin: 2px 0 12px; font-size: 0.82rem; color: var(--muted); }
+
+  .node {
+    background: var(--soft);
+    border: 1px solid color-mix(in srgb, var(--c) 35%, transparent);
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin: 0;
+  }
+  .node b { display: block; font-family: var(--mono); font-size: 0.85rem; font-weight: 600; }
+  .node span { display: block; font-size: 0.8rem; color: var(--muted); }
+  .node.file { border-style: dashed; background: transparent; }
+  .down { text-align: center; color: var(--arrow); font-size: 0.8rem; line-height: 1; padding: 5px 0; }
+  .down::before { content: "↓"; display: block; font-size: 1rem; }
+  .down:empty { padding: 3px 0; }
+
+  .nav-box {
+    --c: var(--nav); --soft: var(--nav-soft);
+    border: 1px solid color-mix(in srgb, var(--nav) 45%, transparent);
+    border-radius: 8px;
+    padding: 8px;
+  }
+  .nav-box > p { margin: 0 0 6px; font-size: 0.8rem; font-weight: 600; color: var(--nav); }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .grid2 .node { padding: 6px 8px; }
+
+  .connector {
+    flex: 0 0 64px;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    color: var(--arrow); font-size: 0.75rem; text-align: center; gap: 2px;
+  }
+  .connector .arr { font-size: 1.3rem; line-height: 1; }
+
+  /* ---- Control loop ---- */
+  .loop {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 16px;
+  }
+  .chain { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 0; margin: 0; padding: 0; list-style: none; }
+  .chain li { display: flex; align-items: center; }
+  .chain li + li::before { content: "→"; color: var(--arrow); padding: 0 8px; }
+  .pill {
+    border-radius: 999px; padding: 4px 10px; font-size: 0.82rem;
+    background: var(--soft); border: 1px solid color-mix(in srgb, var(--c) 35%, transparent);
+  }
+  .pill.ws  { --c: var(--ws);  --soft: var(--ws-soft); }
+  .pill.dog { --c: var(--dog); --soft: var(--dog-soft); }
+  .pill.fw  { --c: var(--fw);  --soft: var(--fw-soft); }
+  .pill.nav { --c: var(--nav); --soft: var(--nav-soft); }
+  .loopback { margin: 10px 0 0; font-size: 0.82rem; color: var(--muted); }
+
+  .notes { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+  .note {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+    padding: 12px 14px; font-size: 0.86rem;
+  }
+  .note h4 { margin: 0 0 4px; font-size: 0.9rem; }
+  .note p { margin: 0; color: var(--muted); }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 0.8rem; color: var(--muted); margin-top: 14px; }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+
+  @media (max-width: 820px) {
+    .stages { flex-direction: column; }
+    .connector { flex-basis: auto; flex-direction: row; padding: 8px 0; gap: 8px; }
+    .connector .arr { transform: rotate(90deg); }
+  }
+  @media (max-width: 420px) {
+    .grid2 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <h1>go2_bim_nav: overall flow</h1>
+  <p class="lede">A BIM model becomes the robot's static map offline. On the dog, Nav2 localizes against that map,
+    adds live lidar obstacles, plans a route, and drives the Go2 through its native Sport API.</p>
+
+  <section class="stages" aria-label="Overall flow">
+    <div class="stage ws">
+      <h3>1 · Workstation</h3>
+      <p class="sub">Offline, once per floor. Plain Python, no ROS.</p>
+      <div class="node file"><b>model.ifc</b><span>BIM model of the building</span></div>
+      <div class="down"></div>
+      <div class="node"><b>ifc_to_map.py</b><span>Walls, columns, railings, stairs → occupied pixels; doorways cleared</span></div>
+      <div class="down"></div>
+      <div class="node file"><b>bim_map.pgm + .yaml</b><span>Occupancy grid, checked with <code>preview_map.py</code></span></div>
+      <div class="down"></div>
+      <div class="node"><b>list_spaces.py</b><span>Room centroids → <code>waypoints.yaml</code></span></div>
+    </div>
+
+    <div class="connector" aria-hidden="true"><span class="arr">→</span><span>scp map +<br>waypoints</span></div>
+
+    <div class="stage dog">
+      <h3>2 · Go2 Jetson (Docker, ROS 2 Humble)</h3>
+      <p class="sub"><code>run_container.sh</code> → <code>ros_entrypoint.sh</code> → <code>bim_nav_bringup.launch.py</code>, ROS domain 1</p>
+      <div class="node"><b>send_goal</b><span>“Go to x, y, yaw” or a named waypoint (NavigateToPose)</span></div>
+      <div class="down"></div>
+      <div class="nav-box">
+        <p>Nav2</p>
+        <div class="grid2">
+          <div class="node"><b>map_server</b><span>Serves the BIM map</span></div>
+          <div class="node"><b>amcl</b><span>Localizes on the map</span></div>
+          <div class="node"><b>costmaps</b><span>BIM + lidar + inflation</span></div>
+          <div class="node"><b>planner</b><span>A* global route</span></div>
+          <div class="node"><b>controller</b><span>DWB, dodges obstacles</span></div>
+          <div class="node"><b>velocity_smoother</b><span>→ <code>/cmd_vel</code></span></div>
+        </div>
+      </div>
+      <div class="down"></div>
+      <div class="grid2">
+        <div class="node"><b>pointcloud_to_laserscan</b><span>3D lidar → 2D <code>/scan</code></span></div>
+        <div class="node"><b>odom_to_tf</b><span>Odometry → odom→base_link tf</span></div>
+      </div>
+      <div class="down"></div>
+      <div class="node"><b>cmd_vel_bridge</b><span>Twist → Sport API Move; stops after 0.5 s of silence</span></div>
+    </div>
+
+    <div class="connector" aria-hidden="true"><span class="arr">⇄</span><span>sensors in,<br>commands out</span></div>
+
+    <div class="stage fw">
+      <h3>3 · Go2 firmware</h3>
+      <p class="sub">MCU over CycloneDDS, domain 0</p>
+      <div class="node"><b>Lidar</b><span><code>rt/utlidar/cloud_base</code> → <code>/utlidar/cloud</code> via <code>lidar_bridge.py</code></span></div>
+      <div class="down"></div>
+      <div class="node"><b>Odometry</b><span><code>/utlidar/robot_odom</code></span></div>
+      <div class="down"></div>
+      <div class="node"><b>Sport service</b><span>Receives <code>/api/sport/request</code> (Move 1008, StopMove 1003) and walks</span></div>
+    </div>
+  </section>
+
+  <div class="legend" aria-hidden="true">
+    <span><i style="background:var(--ws)"></i>Workstation</span>
+    <span><i style="background:var(--dog)"></i>This package on the dog</span>
+    <span><i style="background:var(--nav)"></i>Nav2</span>
+    <span><i style="background:var(--fw)"></i>Go2 firmware</span>
+  </div>
+
+  <h2>The runtime loop</h2>
+  <div class="loop">
+    <ol class="chain">
+      <li><span class="pill fw">Lidar cloud</span></li>
+      <li><span class="pill dog">pointcloud_to_laserscan</span></li>
+      <li><span class="pill nav">amcl + costmaps</span></li>
+      <li><span class="pill nav">planner (A*)</span></li>
+      <li><span class="pill nav">controller (DWB)</span></li>
+      <li><span class="pill nav">velocity_smoother</span></li>
+      <li><span class="pill dog">cmd_vel_bridge</span></li>
+      <li><span class="pill fw">Go2 walks</span></li>
+    </ol>
+    <p class="loopback">↺ The robot moves, the lidar and odometry change, and the loop runs again at about 20 Hz until the goal is reached. <code>send_goal</code> then exits 0, or 1 on failure.</p>
+  </div>
+
+  <h2>Design choices worth knowing</h2>
+  <div class="notes">
+    <div class="note"><h4>BIM is ground truth</h4><p>The planner won't route through unknown space. Live lidar only adds obstacles on top of the BIM walls.</p></div>
+    <div class="note"><h4>Doors and furniture left out</h4><p>Their state changes, so the lidar catches closed doors and moved furniture at runtime instead.</p></div>
+    <div class="note"><h4>Two DDS networks</h4><p>Robot side: CycloneDDS, domain 0. ROS side: Fast DDS, domain 1. Bridges move data between them.</p></div>
+    <div class="note"><h4>Initial pose</h4><p>AMCL starts at (0, 0, 0) in the BIM frame unless set in <code>nav2_params.yaml</code> or with RViz from a laptop.</p></div>
+  </div>
+</main>
+</body>
+</html>
