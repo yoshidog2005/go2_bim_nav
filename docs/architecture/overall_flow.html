@@ -159,7 +159,7 @@
   <h1>go2_bim_nav: overall flow</h1>
   <p class="lede">A BIM model becomes the robot's static map offline. On the dog, Nav2 localizes against that map,
     adds live lidar obstacles, plans a route, and drives the Go2 through its native Sport API.
-    <a href="detailed_flow.html">In-depth version with classes and functions →</a></p>
+    <a href="detailed_flow.html">In-depth version with classes and functions →</a> · <a href="api.html">API reference →</a></p>
 
   <h2>What each part is for</h2>
   <div class="legend legend-top" aria-hidden="true">
@@ -303,7 +303,9 @@
     <div class="note"><h4>BIM is ground truth</h4><p>The planner won't route through unknown space. Live lidar only adds obstacles on top of the BIM walls.</p></div>
     <div class="note"><h4>Doors and furniture left out</h4><p>Their state changes, so the lidar catches closed doors and moved furniture at runtime instead.</p></div>
     <div class="note"><h4>Two DDS networks</h4><p>Robot side: CycloneDDS, domain 0. ROS side: Fast DDS, domain 1. Bridges move data between them.</p></div>
-    <div class="note"><h4>Initial pose</h4><p>AMCL starts at (0, 0, 0) in the BIM frame unless set in <code>nav2_params.yaml</code> or with RViz from a laptop.</p></div>
+    <div class="note"><h4>Initial pose</h4><p>AMCL starts at (0, 0, 0) in the BIM frame unless set in <code>nav2_params.yaml</code> or with RViz from a laptop. Lining this up with the BIM's coordinates is the trickiest part of setup.</p></div>
+    <div class="note"><h4>Maps are made off the robot</h4><p>IfcOpenShell needs Python 3.10+, the Jetson has 3.8 and is slow. Only the .pgm + .yaml get copied over, and a new map needs no rebuild.</p></div>
+    <div class="note"><h4>Two obstacle avoiders</h4><p>The Go2 firmware has its own avoidance mode, separate from Nav2's. Nothing here sets it, so decide on purpose whether both should run.</p></div>
   </div>
 </main>
 </body>

@@ -1,0 +1,774 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>go2_bim_nav API Reference</title>
+<style>
+  :root {
+    --bg: #f7f6f2;
+    --surface: #ffffff;
+    --uc: #fbfaf7;
+    --ink: #1d1d1b;
+    --muted: #5f5e58;
+    --line: #d9d6cc;
+    --warn: #b3261e;
+    --ws: #2f6f9f;      --ws-soft: #e6f0f7;
+    --dog: #3a7d44;     --dog-soft: #e8f3ea;
+    --fw: #a35a1f;      --fw-soft: #f8ece1;
+    --nav: #6b4fa0;     --nav-soft: #efeaf7;
+    --file: #6d6a60;    --file-soft: #f1efe9;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #161614;
+      --surface: #201f1c;
+      --uc: #1b1a18;
+      --ink: #ecebe6;
+      --muted: #a8a69d;
+      --line: #3a3934;
+      --warn: #ff8a80;
+      --ws: #7fb4dc;      --ws-soft: #1b2a35;
+      --dog: #86c48f;     --dog-soft: #1c2b1f;
+      --fw: #e2a06a;      --fw-soft: #34261a;
+      --nav: #b8a2e3;     --nav-soft: #2a2336;
+      --file: #b5b2a7;    --file-soft: #272622;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-padding-top: 16px; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.55 var(--sans); }
+  a { color: inherit; }
+  code { font-family: var(--mono); font-size: 0.86em; }
+
+  .layout { display: grid; grid-template-columns: 270px minmax(0, 1fr); gap: 32px; max-width: 1280px; margin: 0 auto; padding: 28px 16px 64px; }
+
+  /* Sidebar */
+  nav.side { position: sticky; top: 16px; align-self: start; max-height: calc(100vh - 32px); overflow-y: auto; font-size: 0.82rem; padding-right: 4px; }
+  nav.side .search { width: 100%; font: inherit; font-size: 0.85rem; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 7px; padding: 6px 9px; margin-bottom: 12px; }
+  nav.side ul { list-style: none; margin: 0; padding: 0; }
+  nav.side > ul > li { margin-bottom: 10px; }
+  nav.side .uc-link { font-weight: 650; text-decoration: none; display: block; }
+  nav.side .file-link { font-family: var(--mono); font-size: 0.76rem; text-decoration: none; display: block; padding-left: 10px; margin-top: 3px; color: var(--muted); border-left: 2px solid var(--c, var(--line)); }
+  nav.side .fn-link { font-family: var(--mono); font-size: 0.72rem; text-decoration: none; display: block; padding-left: 22px; color: var(--muted); }
+  nav.side a:hover { color: var(--ink); text-decoration: underline; }
+  nav.side .hidden { display: none; }
+
+  /* Header */
+  .back { font-size: 0.85rem; margin: 0 0 6px; }
+  h1 { font-size: 1.6rem; margin: 0 0 4px; letter-spacing: -0.01em; }
+  .lede { color: var(--muted); margin: 0 0 14px; max-width: 80ch; }
+  .legend { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 0.8rem; color: var(--muted); margin-bottom: 8px; }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+
+  /* Level 1: use case */
+  section.uc { background: var(--uc); border: 1.5px solid var(--line); border-radius: 14px; padding: 16px 18px 18px; margin-top: 28px; }
+  section.uc > h2 { margin: 0; font-size: 1.2rem; }
+  section.uc > h2 .num { color: var(--muted); font-weight: 500; margin-right: 8px; }
+  section.uc > .q { margin: 0 0 4px; color: var(--muted); font-style: italic; }
+  section.uc > .why { margin: 0 0 14px; color: var(--muted); font-size: 0.86rem; }
+
+  /* Level 2: file / class */
+  .file { --c: var(--file); --soft: var(--file-soft); background: var(--surface); border: 1.5px solid var(--c); border-radius: 11px; padding: 12px 14px 14px; margin-top: 14px; }
+  .file.ws  { --c: var(--ws);  --soft: var(--ws-soft); }
+  .file.dog { --c: var(--dog); --soft: var(--dog-soft); }
+  .file.nav { --c: var(--nav); --soft: var(--nav-soft); }
+  .file.fw  { --c: var(--fw);  --soft: var(--fw-soft); }
+  .file > header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 10px; }
+  .file h3 { margin: 0; font-family: var(--mono); font-size: 1rem; }
+  .file h3 a { text-decoration: none; }
+  .file h3 a:hover { text-decoration: underline; }
+  .tag { font-size: 0.7rem; color: var(--c); border: 1px solid color-mix(in srgb, var(--c) 45%, transparent); border-radius: 999px; padding: 0 7px; white-space: nowrap; }
+  .file .path { font-family: var(--mono); font-size: 0.74rem; color: var(--muted); margin: 0 0 6px; }
+  .file > p { margin: 6px 0; font-size: 0.9rem; }
+  .run { font-family: var(--mono); font-size: 0.78rem; background: var(--soft); border-radius: 6px; padding: 6px 9px; margin: 8px 0; overflow-x: auto; white-space: pre; }
+
+  .cls { background: var(--soft); border: 1px solid color-mix(in srgb, var(--c) 45%, transparent); border-radius: 10px; padding: 10px 12px 12px; margin-top: 12px; }
+  .cls > h4 { margin: 0 0 4px; font-family: var(--mono); font-size: 0.92rem; }
+  .cls > p { margin: 4px 0 8px; font-size: 0.86rem; }
+
+  /* Level 3: function */
+  .fn { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 9px 12px 10px; margin-top: 10px; }
+  .cls .fn { border-color: color-mix(in srgb, var(--c) 25%, var(--line)); }
+  .fn > h5 { margin: 0; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2px 10px; align-items: baseline; }
+  .fn > h5 code { font-size: 0.84rem; font-weight: 700; color: var(--c); overflow-wrap: anywhere; }
+  .fn > h5 .src { font-family: var(--mono); font-size: 0.7rem; color: var(--muted); font-weight: 400; white-space: nowrap; }
+  .fn > p { margin: 4px 0 6px; font-size: 0.86rem; }
+  .fn table { border-collapse: collapse; width: 100%; font-size: 0.8rem; margin: 4px 0 6px; }
+  .fn th, .fn td { text-align: left; vertical-align: top; padding: 3px 8px 3px 0; border-bottom: 1px solid var(--line); }
+  .fn th { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 650; }
+  .fn td:first-child, .fn td:nth-child(2) { font-family: var(--mono); font-size: 0.76rem; white-space: nowrap; }
+  .fn td:nth-child(2) { color: var(--muted); }
+  .fn dl { display: grid; grid-template-columns: max-content 1fr; gap: 3px 12px; margin: 4px 0 0; font-size: 0.82rem; }
+  .fn dt { color: var(--muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; padding-top: 2px; }
+  .fn dd { margin: 0; }
+  .fn dd a { font-family: var(--mono); font-size: 0.78rem; }
+  .warn { color: var(--warn); }
+
+  /* ROS interface tables (classes, nodes) */
+  .ros { width: 100%; border-collapse: collapse; font-size: 0.8rem; margin: 6px 0 2px; }
+  .ros th, .ros td { text-align: left; padding: 3px 8px 3px 0; border-bottom: 1px solid color-mix(in srgb, var(--c) 20%, var(--line)); vertical-align: top; }
+  .ros th { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 650; }
+  .ros td:nth-child(2), .ros td:nth-child(3) { font-family: var(--mono); font-size: 0.76rem; }
+
+  .nav2 { margin-top: 14px; }
+  .nav2 h4 { margin: 0 0 4px; font-size: 0.9rem; }
+  .nav2 table { width: 100%; border-collapse: collapse; font-size: 0.8rem; background: var(--surface); border: 1.5px solid var(--nav); border-radius: 10px; overflow: hidden; }
+  .nav2 th, .nav2 td { text-align: left; vertical-align: top; padding: 5px 9px; border-bottom: 1px solid var(--line); }
+  .nav2 th { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 650; background: var(--nav-soft); }
+  .nav2 td:first-child { font-family: var(--mono); font-weight: 700; color: var(--nav); white-space: nowrap; }
+  .nav2 td:nth-child(3) { font-family: var(--mono); font-size: 0.74rem; }
+
+  .fn.hidden, .file.hidden, section.uc.hidden, .cls.hidden { display: none; }
+  .empty { display: none; color: var(--muted); margin-top: 20px; }
+
+  @media (max-width: 860px) {
+    .layout { grid-template-columns: 1fr; gap: 12px; }
+    nav.side { position: static; max-height: none; }
+    nav.side .file-link, nav.side .fn-link { display: none; }
+    nav.side > ul { display: flex; flex-wrap: wrap; gap: 4px 14px; }
+    nav.side > ul > li { margin: 0; }
+    .fn td:first-child, .fn td:nth-child(2) { white-space: normal; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+  <nav class="side" aria-label="API contents">
+    <input class="search" id="q" type="search" placeholder="Filter functions…" aria-label="Filter functions">
+    <ul id="toc"></ul>
+  </nav>
+
+  <main>
+    <p class="back"><a href="overall_flow.html">Overview</a> · <a href="detailed_flow.html">Detailed flow</a></p>
+    <h1>go2_bim_nav: API reference</h1>
+    <p class="lede">Every file, class and function in the repo, grouped the same way as the detailed flow: <strong>use case</strong> →
+      <strong>file or class</strong> → <strong>function</strong>. Each function lists its parameters, what it returns or publishes,
+      and where its data comes from and goes. Nav2 isn't this repo's code, so each use case ends with a table of the Nav2 nodes it
+      configures instead.</p>
+    <div class="legend" aria-hidden="true">
+      <span><i style="background:var(--ws)"></i>Workstation, offline</span>
+      <span><i style="background:var(--dog)"></i>This repo's code on the dog</span>
+      <span><i style="background:var(--nav)"></i>Nav2 on the dog</span>
+      <span><i style="background:var(--fw)"></i>Go2 robot / Unitree SDK</span>
+      <span><i style="background:var(--file)"></i>Config and scripts</span>
+    </div>
+    <p class="empty" id="empty">No functions match that filter.</p>
+
+    <!-- ============================ 0. Startup ============================ -->
+    <section class="uc" id="uc-startup" data-title="Startup and configuration">
+      <h2><span class="num">0</span>Startup and configuration</h2>
+      <p class="q">How does everything get started, and where are the settings?</p>
+      <p class="why">Not part of the data flow, but every other use case depends on it.</p>
+
+      <div class="file" id="run_container.sh">
+        <header><h3><a href="../../run_container.sh">run_container.sh</a></h3><span class="tag">bash · on the dog</span></header>
+        <p>Starts the Docker image with host networking, your user and home folder, the Jetson GPU and X11.</p>
+        <div class="run">./run_container.sh                 # interactive shell
+./run_container.sh ros2 topic list # one command, then exit</div>
+        <div class="fn" id="run_container.env">
+          <h5><code>environment variables</code><span class="src">run_container.sh:20, 59-60</span></h5>
+          <table>
+            <tr><th>Name</th><th>Default</th><th>Meaning</th></tr>
+            <tr><td>IMAGE</td><td>bim_nav:latest</td><td>Image to run.</td></tr>
+            <tr><td>UNITREE_ROS2_WS</td><td>unset</td><td>Path to a Humble-built <code>unitree_ros2</code> workspace, needed for <code>unitree_api</code>. Foxy builds are refused.</td></tr>
+            <tr><td>ROS_DOMAIN_ID</td><td>1</td><td>Passed through; the entrypoint sets 1 regardless.</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="file" id="ros_entrypoint.sh">
+        <header><h3><a href="../../ros_entrypoint.sh">ros_entrypoint.sh</a></h3><span class="tag">bash · container entrypoint</span></header>
+        <p>Sources, in order: ROS 2 Humble → <code>/opt/nav2_ws</code> → <code>$UNITREE_ROS2_WS</code> → <code>~/bim_nav_ws</code> (or <code>/root/bim_nav_ws</code>). Then sets <code>ROS_DOMAIN_ID=1</code>, warns if any Foxy path leaked in, and runs the given command.</p>
+      </div>
+
+      <div class="file dog" id="bim_nav_bringup.launch.py">
+        <header><h3><a href="../../src/go2_bim_nav/launch/bim_nav_bringup.launch.py">bim_nav_bringup.launch.py</a></h3><span class="tag">launch file</span></header>
+        <div class="run">ros2 launch go2_bim_nav bim_nav_bringup.launch.py map:=/path/bim_map.yaml lidar_cloud_topic:=/utlidar/cloud</div>
+        <div class="fn" id="launch.generate_launch_description">
+          <h5><code>generate_launch_description() → LaunchDescription</code><span class="src">launch:19</span></h5>
+          <p>Declares the launch arguments and starts three nodes from this repo's setup, plus Nav2's standard bringup.</p>
+          <table>
+            <tr><th>Launch arg</th><th>Default</th><th>Meaning</th></tr>
+            <tr><td>map</td><td>share/…/maps/bim_map.yaml</td><td>Map YAML from <a href="#ifc_to_map.write_map">write_map</a>, passed to map_server.</td></tr>
+            <tr><td>params_file</td><td>share/…/config/nav2_params.yaml</td><td>Nav2 parameters.</td></tr>
+            <tr><td>lidar_cloud_topic</td><td>/utlidar/cloud</td><td>Point cloud fed to pointcloud_to_laserscan.</td></tr>
+            <tr><td>scan_topic</td><td>/scan</td><td>2D scan it publishes.</td></tr>
+            <tr><td>use_sim_time</td><td>false</td><td>Simulation clock.</td></tr>
+            <tr><td>use_odom_to_tf</td><td>true</td><td>Start <a href="#odom_to_tf.py">odom_to_tf</a>. Set false if something else already publishes odom → base_link.</td></tr>
+          </table>
+          <dl>
+            <dt>Starts</dt><dd><code>pointcloud_to_laserscan_node</code>, <a href="#odom_to_tf.py">odom_to_tf</a> (if enabled), <a href="#cmd_vel_bridge.py">cmd_vel_bridge</a>, <code>nav2_bringup/bringup_launch.py</code> (map, params_file, use_sim_time, autostart=true)</dd>
+          </dl>
+        </div>
+      </div>
+
+      <div class="file" id="setup.py">
+        <header><h3><a href="../../src/go2_bim_nav/setup.py">setup.py</a> + <a href="../../src/go2_bim_nav/package.xml">package.xml</a></h3><span class="tag">package</span></header>
+        <p>Installs launch, config and maps into the package's share folder and registers these commands for <code>ros2 run go2_bim_nav …</code>:</p>
+        <div class="run">ifc_to_map · list_spaces · send_goal · cmd_vel_bridge · odom_to_tf</div>
+        <p><code>preview_map.py</code> isn't registered; run it with <code>python</code> directly.</p>
+      </div>
+
+      <div class="file" id="nav2_params.yaml">
+        <header><h3><a href="../../src/go2_bim_nav/config/nav2_params.yaml">nav2_params.yaml</a></h3><span class="tag">config</span></header>
+        <p>All Nav2 settings. The values that matter for each node are listed in the Nav2 table at the end of each use case below.</p>
+      </div>
+    </section>
+
+    <!-- ============================ 1. Mapping ============================ -->
+    <section class="uc" id="uc-mapping" data-title="Mapping">
+      <h2><span class="num">1</span>Mapping</h2>
+      <p class="q">What does the building look like?</p>
+      <p class="why">Runs on a workstation with Python 3.10+ (IfcOpenShell won't install on the Jetson's 3.8). Only the .pgm + .yaml go to the dog.</p>
+
+      <div class="file ws" id="ifc_to_map.py">
+        <header><h3><a href="../../src/go2_bim_nav/go2_bim_nav/ifc_to_map.py">ifc_to_map.py</a></h3><span class="tag">module · workstation</span></header>
+        <p>Turns an IFC model into a <code>map_server</code> occupancy grid. Needs <code>ifcopenshell</code>, <code>numpy</code>, <code>Pillow</code>.</p>
+        <div class="run">python ifc_to_map.py --input model.ifc --output bim_map --resolution 0.05 --storey "Level 1"</div>
+        <table class="ros">
+          <tr><th>Constant</th><th>Value</th><th></th></tr>
+          <tr><td>DEFAULT_INCLUDE_TYPES</td><td>IfcWall, IfcWallStandardCase, IfcColumn, IfcCurtainWall, IfcRailing, IfcStairFlight, IfcPlate</td><td></td></tr>
+          <tr><td>FREE / OCCUPIED</td><td>254 / 0</td><td></td></tr>
+        </table>
+
+        <div class="fn" id="ifc_to_map.main">
+          <h5><code>main()</code><span class="src">ifc_to_map.py:216</span></h5>
+          <p>Parses the command line, then runs the pipeline: <a href="#ifc_to_map.project_triangles">project_triangles</a> → <a href="#ifc_to_map.door_bounding_boxes">door_bounding_boxes</a> → <a href="#ifc_to_map.rasterise">rasterise</a> → <a href="#ifc_to_map.write_map">write_map</a>.</p>
+          <table>
+            <tr><th>Option</th><th>Default</th><th>Meaning</th></tr>
+            <tr><td>--input</td><td>required</td><td>Path to the .ifc file.</td></tr>
+            <tr><td>--output</td><td>required</td><td>Output prefix; writes <code>&lt;prefix&gt;.pgm</code> and <code>&lt;prefix&gt;.yaml</code>.</td></tr>
+            <tr><td>--resolution</td><td>0.05</td><td>Metres per pixel.</td></tr>
+            <tr><td>--padding</td><td>1.0</td><td>Free margin around the model, metres.</td></tr>
+            <tr><td>--storey</td><td>all storeys</td><td><code>IfcBuildingStorey.Name</code> to keep. Leave out only for single-floor models.</td></tr>
+            <tr><td>--include-types</td><td>DEFAULT_INCLUDE_TYPES</td><td>Comma-separated IFC classes to draw as walls.</td></tr>
+            <tr><td>--no-clear-doors</td><td>off</td><td>Don't carve door footprints back to free space.</td></tr>
+            <tr><td>--door-padding</td><td>0.05</td><td>Extra metres cleared around each door.</td></tr>
+          </table>
+          <dl><dt>Prints</dt><dd>“Wrote …pgm” and “Wrote …yaml”; notes on stderr for skipped elements or missing doors.</dd></dl>
+        </div>
+
+        <div class="fn" id="ifc_to_map.make_geom_settings">
+          <h5><code>make_geom_settings() → ifcopenshell.geom.settings</code><span class="src">ifc_to_map.py:80</span></h5>
+          <p>Geometry settings with world coordinates on, so every element lands in the same frame. Handles both the old (&lt; 0.7) and new IfcOpenShell settings APIs.</p>
+          <dl><dt>Used by</dt><dd><a href="#ifc_to_map.project_triangles">project_triangles</a>, <a href="#ifc_to_map.door_bounding_boxes">door_bounding_boxes</a>, <a href="#list_spaces.main">list_spaces.main</a> (imported)</dd></dl>
+        </div>
+
+        <div class="fn" id="ifc_to_map.get_storey_name">
+          <h5><code>get_storey_name(element) → str | None</code><span class="src">ifc_to_map.py:75</span></h5>
+          <p>Name of the storey that contains an element, or None if it isn't in one.</p>
+          <table><tr><th>Parameter</th><th>Type</th><th>Meaning</th></tr><tr><td>element</td><td>ifcopenshell entity</td><td>Any IFC element.</td></tr></table>
+        </div>
+
+        <div class="fn" id="ifc_to_map.project_triangles">
+          <h5><code>project_triangles(model, include_types, storey_name=None)</code><span class="src">ifc_to_map.py:91</span></h5>
+          <p>Generator. Triangulates every matching element and yields each triangle flattened to the floor plane.</p>
+          <table>
+            <tr><th>Parameter</th><th>Type</th><th>Meaning</th></tr>
+            <tr><td>model</td><td>ifcopenshell.file</td><td>The opened IFC model.</td></tr>
+            <tr><td>include_types</td><td>list[str]</td><td>IFC class names to include.</td></tr>
+            <tr><td>storey_name</td><td>str | None</td><td>Keep only elements on this storey.</td></tr>
+          </table>
+          <dl>
+            <dt>Yields</dt><dd><code>[(x, y), (x, y), (x, y)]</code> in world metres</dd>
+            <dt>Skips</dt><dd>Elements with no geometry (RuntimeError); prints a count to stderr</dd>
+            <dt>Data to</dt><dd><a href="#ifc_to_map.rasterise">rasterise</a> as <code>triangles</code></dd>
+          </dl>
+        </div>
+
+        <div class="fn" id="ifc_to_map.door_bounding_boxes">
+          <h5><code>door_bounding_boxes(model, storey_name=None, padding=0.05)</code><span class="src">ifc_to_map.py:124</span></h5>
+          <p>Generator. Yields a padded floor-plan box for every <code>IfcDoor</code> (and <code>IfcDoorStandardCase</code> in older schemas).</p>
+          <table>
+            <tr><th>Parameter</th><th>Type</th><th>Meaning</th></tr>
+            <tr><td>model</td><td>ifcopenshell.file</td><td>The opened IFC model.</td></tr>
+            <tr><td>storey_name</td><td>str | None</td><td>Keep only doors on this storey.</td></tr>
+            <tr><td>padding</td><td>float</td><td>Metres added on every side.</td></tr>
+          </table>
+          <dl>
+            <dt>Yields</dt><dd><code>(min_x, min_y, max_x, max_y)</code> in world metres</dd>
+            <dt>Data to</dt><dd><a href="#ifc_to_map.rasterise">rasterise</a> as <code>clear_boxes</code></dd>
+          </dl>
+        </div>
+
+        <div class="fn" id="ifc_to_map.rasterise">
+          <h5><code>rasterise(triangles, resolution, padding, clear_boxes=None) → (img, origin)</code><span class="src">ifc_to_map.py:159</span></h5>
+          <p>Sizes an image to fit all triangles plus padding, draws every triangle as wall, then paints the door boxes back to free space.</p>
+          <table>
+            <tr><th>Parameter</th><th>Type</th><th>Meaning</th></tr>
+            <tr><td>triangles</td><td>iterable</td><td>From <a href="#ifc_to_map.project_triangles">project_triangles</a>.</td></tr>
+            <tr><td>resolution</td><td>float</td><td>Metres per pixel.</td></tr>
+            <tr><td>padding</td><td>float</td><td>Free margin, metres.</td></tr>
+            <tr><td>clear_boxes</td><td>iterable | None</td><td>From <a href="#ifc_to_map.door_bounding_boxes">door_bounding_boxes</a>.</td></tr>
+          </table>
+          <dl>
+            <dt>Returns</dt><dd><code>img</code>: PIL image, mode L (0 wall, 254 free). <code>origin</code>: <code>(min_x, min_y)</code> of the bottom-left pixel, metres.</dd>
+            <dt>Raises</dt><dd><code>ValueError</code> if there are no triangles (check --include-types and --storey)</dd>
+            <dt>Data to</dt><dd><a href="#ifc_to_map.write_map">write_map</a></dd>
+          </dl>
+        </div>
+
+        <div class="fn" id="ifc_to_map.write_map">
+          <h5><code>write_map(img, origin, resolution, output_prefix) → (pgm_path, yaml_path)</code><span class="src">ifc_to_map.py:199</span></h5>
+          <p>Saves the image and a <code>map_server</code> YAML next to it.</p>
+          <table>
+            <tr><th>Parameter</th><th>Type</th><th>Meaning</th></tr>
+            <tr><td>img</td><td>PIL.Image</td><td>From <a href="#ifc_to_map.rasterise">rasterise</a>.</td></tr>
+            <tr><td>origin</td><td>(float, float)</td><td>Written as <code>origin: [x, y, 0.0]</code>.</td></tr>
+            <tr><td>resolution</td><td>float</td><td>Metres per pixel.</td></tr>
+            <tr><td>output_prefix</td><td>str</td><td>Path without extension.</td></tr>
+          </table>
+          <dl>
+            <dt>Writes</dt><dd><code>image</code>, <code>resolution</code>, <code>origin</code>, <code>negate: 0</code>, <code>occupied_thresh: 0.65</code>, <code>free_thresh: 0.25</code></dd>
+            <dt>Data to</dt><dd><a href="#preview_map.main">preview_map</a>, then map_server on the dog (launch arg <code>map</code>)</dd>
+            <dt>Note</dt><dd class="warn">The YAML's <code>image</code> field strips folders by splitting on “/” only. On Windows, give <code>--output</code> with forward slashes (e.g. <code>maps/bim_map</code>), or the folder ends up inside the image path.</dd>
+          </dl>
+        </div>
+      </div>
+
+      <div class="file ws" id="preview_map.py">
+        <header><h3><a href="../../src/go2_bim_nav/go2_bim_nav/preview_map.py">preview_map.py</a></h3><span class="tag">module · workstation</span></header>
+        <div class="run">python preview_map.py --map bim_map.yaml [--save preview.png]</div>
+        <div class="fn" id="preview_map.main">
+          <h5><code>main()</code><span class="src">preview_map.py:33</span></h5>
+          <p>Shows the map with a metre grid at true aspect ratio, resolving the image path relative to the YAML like map_server does. Needs PyYAML, Pillow, matplotlib.</p>
+          <table>
+            <tr><th>Option</th><th>Default</th><th>Meaning</th></tr>
+            <tr><td>--map</td><td>required</td><td>Map YAML (not the .pgm).</td></tr>
+            <tr><td>--save</td><td>none</td><td>Write a PNG instead of opening a window (use over SSH).</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="nav2">
+        <h4>Nav2 nodes in this use case</h4>
+        <table>
+          <tr><th>Node</th><th>Role</th><th>Configured</th></tr>
+          <tr><td>map_server</td><td>Loads the map YAML and publishes <code>/map</code> (OccupancyGrid, transient local).</td><td>yaml_filename ← launch arg map</td></tr>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============================ 2. Sensing ============================ -->
+    <section class="uc" id="uc-sensing" data-title="Sensing">
+      <h2><span class="num">2</span>Sensing</h2>
+      <p class="q">How does robot data reach ROS?</p>
+      <p class="why">The Go2 publishes on CycloneDDS domain 0. This stack runs on ROS domain 1 with Fast DDS, so data is bridged across.</p>
+
+      <div class="file dog" id="lidar_bridge.py">
+        <header><h3><a href="../../examples/lidar_bridge.py">lidar_bridge.py</a></h3><span class="tag">module · by hand</span></header>
+        <div class="run">python3 examples/lidar_bridge.py [--ros-args -r /utlidar/cloud:=/other]</div>
+        <table class="ros">
+          <tr><th>Interface</th><th>Name</th><th>Type</th></tr>
+          <tr><td>Node</td><td>go2_lidar_bridge</td><td></td></tr>
+          <tr><td>Reads (robot)</td><td>rt/utlidar/cloud_base</td><td>PointCloud2_ · domain 0 · ethrobot</td></tr>
+          <tr><td>Publishes</td><td>/utlidar/cloud</td><td>sensor_msgs/PointCloud2 · SENSOR_DATA QoS</td></tr>
+        </table>
+
+        <div class="fn" id="lidar_bridge.main">
+          <h5><code>main() → int</code><span class="src">lidar_bridge.py:89</span></h5>
+          <p>Creates the ROS node and publisher, joins the robot's DDS network on <code>ethrobot</code>, subscribes with <a href="#lidar_bridge.on_cloud">on_cloud</a>, and spins until Ctrl+C or <code>docker stop</code>.</p>
+          <dl><dt>Returns</dt><dd><code>0</code> on a normal exit</dd></dl>
+        </div>
+
+        <div class="fn" id="lidar_bridge.on_cloud">
+          <h5><code>on_cloud(msg: PointCloud2_) → None</code><span class="src">lidar_bridge.py:112 · nested in main</span></h5>
+          <p>Runs on the SDK's reader thread for each cloud. Converts with <a href="#lidar_bridge.to_ros_cloud">to_ros_cloud</a> and publishes. A bad frame is logged and dropped. Logs the robot-vs-Jetson clock skew once, then a count every 100 clouds.</p>
+          <dl>
+            <dt>Data in</dt><dd>Go2 LiDAR, <code>rt/utlidar/cloud_base</code></dd>
+            <dt>Data to</dt><dd><code>/utlidar/cloud</code> → pointcloud_to_laserscan</dd>
+          </dl>
+        </div>
+
+        <div class="fn" id="lidar_bridge.to_ros_cloud">
+          <h5><code>to_ros_cloud(msg, PointCloud2, PointField, clock) → PointCloud2</code><span class="src">lidar_bridge.py:62</span></h5>
+          <p>Field-for-field copy of the Unitree message into a ROS message. The timestamp is replaced with the Jetson's clock because the robot's clock is minutes off.</p>
+          <table>
+            <tr><th>Parameter</th><th>Type</th><th>Meaning</th></tr>
+            <tr><td>msg</td><td>PointCloud2_</td><td>Unitree SDK cloud.</td></tr>
+            <tr><td>PointCloud2, PointField</td><td>classes</td><td>ROS message types, passed in so the module imports without ROS.</td></tr>
+            <tr><td>clock</td><td>rclpy Clock</td><td>Source of the new stamp.</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="nav2">
+        <h4>Other nodes in this use case</h4>
+        <table>
+          <tr><th>Node</th><th>Role</th><th>Configured (launch file)</th></tr>
+          <tr><td>pointcloud_to_laserscan</td><td>Slices the 3D cloud into a 2D scan for AMCL and the costmaps.</td><td>cloud_in ← lidar_cloud_topic, scan → /scan, target_frame base_link, min_height 0.05, max_height 0.35 (tune for mount), angle −π…π step 0.0087, range 0.15–12.0, use_inf true</td></tr>
+          <tr><td>Go2 odometry</td><td><span class="warn">Expected on /utlidar/robot_odom (nav_msgs/Odometry), but nothing in the repo bridges it onto domain 1.</span></td><td>read by odom_to_tf, bt_navigator, controller_server, velocity_smoother</td></tr>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============================ 3. Obstacle sensing ============================ -->
+    <section class="uc" id="uc-obstacles" data-title="Obstacle sensing">
+      <h2><span class="num">3</span>Obstacle sensing</h2>
+      <p class="q">What's in the way that the BIM doesn't know about?</p>
+      <p class="why">No code from this repo here: it's all Nav2 costmaps, configured in <code>nav2_params.yaml</code>.</p>
+      <div class="nav2">
+        <h4>Nav2 nodes in this use case</h4>
+        <table>
+          <tr><th>Node</th><th>Role</th><th>Configured</th></tr>
+          <tr><td>global_costmap</td><td>Whole floor for route planning: BIM walls plus live obstacles.</td><td>frame map, 1 Hz, StaticLayer(/map) → ObstacleLayer(/scan, range 6.0, raytrace 6.5) → InflationLayer(radius 0.4, scale 3.0), track_unknown_space true</td></tr>
+          <tr><td>local_costmap</td><td>Rolling window around the robot for the controller and recoveries.</td><td>frame odom, 6×6 m @ 0.05, 10 Hz, ObstacleLayer(/scan) → InflationLayer(radius 0.4)</td></tr>
+          <tr><td>(both)</td><td>Robot outline used for collision checks.</td><td>footprint 0.70 × 0.32 m <span class="warn">placeholder, measure the real Go2</span></td></tr>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============================ 4. Localization ============================ -->
+    <section class="uc" id="uc-localization" data-title="Localization">
+      <h2><span class="num">4</span>Localization</h2>
+      <p class="q">Where am I on the map?</p>
+      <p class="why">Odometry drifts; AMCL corrects it by matching the scan to the BIM walls.</p>
+
+      <div class="file dog" id="odom_to_tf.py">
+        <header><h3><a href="../../src/go2_bim_nav/go2_bim_nav/odom_to_tf.py">odom_to_tf.py</a></h3><span class="tag">module · launched</span></header>
+        <div class="run">ros2 run go2_bim_nav odom_to_tf</div>
+        <div class="cls" id="odom_to_tf.OdomToTf">
+          <h4>class OdomToTf(rclpy.node.Node)</h4>
+          <p>Re-broadcasts the robot's odometry topic as the <code>odom → base_link</code> transform AMCL and the costmaps need.</p>
+          <table class="ros">
+            <tr><th>Interface</th><th>Name</th><th>Type</th></tr>
+            <tr><td>Node</td><td>odom_to_tf_broadcaster</td><td></td></tr>
+            <tr><td>Subscribes</td><td>/utlidar/robot_odom</td><td>nav_msgs/Odometry · sensor-data QoS</td></tr>
+            <tr><td>Broadcasts tf</td><td>odom → base_link</td><td>geometry_msgs/TransformStamped</td></tr>
+          </table>
+          <div class="fn" id="odom_to_tf.OdomToTf.__init__">
+            <h5><code>__init__(self)</code><span class="src">odom_to_tf.py:28</span></h5>
+            <p>Creates the TransformBroadcaster and the subscription. Best-effort QoS so it receives from either reliable or best-effort publishers.</p>
+          </div>
+          <div class="fn" id="odom_to_tf.OdomToTf._on_odom">
+            <h5><code>_on_odom(self, msg: Odometry) → None</code><span class="src">odom_to_tf.py:42</span></h5>
+            <p>Copies the pose into a TransformStamped and sends it. Uses <code>now()</code> as the stamp instead of the message's own time.</p>
+            <dl>
+              <dt>Data in</dt><dd><code>/utlidar/robot_odom</code> <span class="warn">(no source on domain 1 in this repo)</span></dd>
+              <dt>Data to</dt><dd>tf → amcl's motion model, both costmaps</dd>
+            </dl>
+          </div>
+        </div>
+        <div class="fn" id="odom_to_tf.main">
+          <h5><code>main()</code><span class="src">odom_to_tf.py:54</span></h5>
+          <p>Spins an OdomToTf node until Ctrl+C.</p>
+        </div>
+      </div>
+
+      <div class="nav2">
+        <h4>Nav2 nodes in this use case</h4>
+        <table>
+          <tr><th>Node</th><th>Role</th><th>Configured</th></tr>
+          <tr><td>amcl</td><td>Particle filter: matches /scan to /map and publishes <code>map → odom</code> tf and /amcl_pose.</td><td>likelihood_field, DifferentialMotionModel, 500–2000 particles, max_beams 60, laser_max_range 12, set_initial_pose true at (0, 0, 0) <span class="warn">set to the real start spot</span></td></tr>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============================ 5. Choosing a goal ============================ -->
+    <section class="uc" id="uc-goal" data-title="Choosing a goal">
+      <h2><span class="num">5</span>Choosing a goal</h2>
+      <p class="q">Where should I go?</p>
+      <p class="why">Nothing moves until a goal is sent. Named rooms come from the BIM via list_spaces and waypoints.yaml.</p>
+
+      <div class="file ws" id="list_spaces.py">
+        <header><h3><a href="../../src/go2_bim_nav/go2_bim_nav/list_spaces.py">list_spaces.py</a></h3><span class="tag">module · workstation</span></header>
+        <div class="run">python list_spaces.py --input model.ifc</div>
+        <div class="fn" id="list_spaces.main">
+          <h5><code>main()</code><span class="src">list_spaces.py:29</span></h5>
+          <p>Prints every <code>IfcSpace</code> name with its centre in the same world coordinates as the map. The centre is the average of the room's mesh vertices, which is close enough for most rooms but can be off for L-shaped ones.</p>
+          <table><tr><th>Option</th><th>Default</th><th>Meaning</th></tr><tr><td>--input</td><td>required</td><td>Path to the .ifc file.</td></tr></table>
+          <dl>
+            <dt>Uses</dt><dd><a href="#ifc_to_map.make_geom_settings">ifc_to_map.make_geom_settings</a></dd>
+            <dt>Prints</dt><dd>Name (Name, LongName or Space#id), x, y</dd>
+            <dt>Data to</dt><dd>Copied by hand into <a href="#waypoints.yaml">waypoints.yaml</a></dd>
+          </dl>
+        </div>
+      </div>
+
+      <div class="file" id="waypoints.yaml">
+        <header><h3><a href="../../src/go2_bim_nav/config/waypoints.yaml">waypoints.yaml</a></h3><span class="tag">config</span></header>
+        <div class="run">kitchen:  {x: 3.5, y: 1.2, yaw: 0.0}    # examples only
+entrance: {x: 0.0, y: 0.0, yaw: 1.57}</div>
+      </div>
+
+      <div class="file dog" id="send_goal.py">
+        <header><h3><a href="../../src/go2_bim_nav/go2_bim_nav/send_goal.py">send_goal.py</a></h3><span class="tag">module · by hand</span></header>
+        <div class="run">ros2 run go2_bim_nav send_goal --x 3.5 --y 1.2 --yaw 0.0
+ros2 run go2_bim_nav send_goal --waypoint kitchen --waypoints-file ~/maps/waypoints.yaml</div>
+
+        <div class="fn" id="send_goal.main">
+          <h5><code>main()</code><span class="src">send_goal.py:114</span></h5>
+          <p>Picks coordinates from the options or a waypoint, sends them with <a href="#send_goal.GoalSender.send">GoalSender.send</a>, and exits with its result, so shell scripts can chain goals.</p>
+          <table>
+            <tr><th>Option</th><th>Default</th><th>Meaning</th></tr>
+            <tr><td>--x, --y</td><td>none</td><td>Target in the map (BIM) frame, metres.</td></tr>
+            <tr><td>--yaw</td><td>0.0</td><td>Heading, radians, counter-clockwise.</td></tr>
+            <tr><td>--frame-id</td><td>map</td><td>Frame of the goal pose.</td></tr>
+            <tr><td>--waypoint</td><td>none</td><td>Name to look up instead of --x/--y.</td></tr>
+            <tr><td>--waypoints-file</td><td>none</td><td>YAML for --waypoint (required with it).</td></tr>
+          </table>
+          <dl><dt>Exit code</dt><dd><code>0</code> goal reached; <code>1</code> bad options, unknown waypoint, server missing, rejected or failed</dd></dl>
+        </div>
+
+        <div class="fn" id="send_goal.load_waypoint">
+          <h5><code>load_waypoint(waypoints_file, name) → (x, y, yaw)</code><span class="src">send_goal.py:99</span></h5>
+          <p>Reads the YAML and returns one entry. <code>yaw</code> defaults to 0.0.</p>
+          <table>
+            <tr><th>Parameter</th><th>Type</th><th>Meaning</th></tr>
+            <tr><td>waypoints_file</td><td>str</td><td>Path to a YAML of <code>name: {x, y, yaw}</code>.</td></tr>
+            <tr><td>name</td><td>str</td><td>Key to look up.</td></tr>
+          </table>
+          <dl><dt>Exits</dt><dd><code>sys.exit(1)</code> if PyYAML is missing or the name isn't in the file (prints the known names)</dd></dl>
+        </div>
+
+        <div class="fn" id="send_goal.yaw_to_quaternion">
+          <h5><code>yaw_to_quaternion(yaw) → (x, y, z, w)</code><span class="src">send_goal.py:40</span></h5>
+          <p>Heading in radians to a quaternion for a flat floor: <code>(0, 0, sin(yaw/2), cos(yaw/2))</code>.</p>
+        </div>
+
+        <div class="cls" id="send_goal.GoalSender">
+          <h4>class GoalSender(rclpy.node.Node)</h4>
+          <p>Action client for Nav2's <code>navigate_to_pose</code>.</p>
+          <table class="ros">
+            <tr><th>Interface</th><th>Name</th><th>Type</th></tr>
+            <tr><td>Node</td><td>go2_bim_nav_goal_sender</td><td></td></tr>
+            <tr><td>Action client</td><td>navigate_to_pose</td><td>nav2_msgs/action/NavigateToPose</td></tr>
+          </table>
+          <div class="fn" id="send_goal.GoalSender.__init__">
+            <h5><code>__init__(self)</code><span class="src">send_goal.py:45</span></h5>
+            <p>Creates the action client and a feedback counter.</p>
+          </div>
+          <div class="fn" id="send_goal.GoalSender.send">
+            <h5><code>send(self, x, y, yaw, frame_id='map') → bool</code><span class="src">send_goal.py:50</span></h5>
+            <p>Waits up to 10 s for the action server, builds the goal pose with <a href="#send_goal.yaw_to_quaternion">yaw_to_quaternion</a>, sends it, and blocks until a result arrives.</p>
+            <table>
+              <tr><th>Parameter</th><th>Type</th><th>Meaning</th></tr>
+              <tr><td>x, y</td><td>float</td><td>Target position, metres.</td></tr>
+              <tr><td>yaw</td><td>float</td><td>Target heading, radians.</td></tr>
+              <tr><td>frame_id</td><td>str</td><td>Frame of the pose.</td></tr>
+            </table>
+            <dl>
+              <dt>Returns</dt><dd><code>True</code> if the status is STATUS_SUCCEEDED, else <code>False</code></dd>
+              <dt>Data to</dt><dd>bt_navigator: <code>PoseStamped(header.frame_id, position x/y, orientation z/w)</code></dd>
+              <dt>Data in</dt><dd>Feedback → <a href="#send_goal.GoalSender._feedback_cb">_feedback_cb</a>; result status</dd>
+            </dl>
+          </div>
+          <div class="fn" id="send_goal.GoalSender._feedback_cb">
+            <h5><code>_feedback_cb(self, feedback_msg) → None</code><span class="src">send_goal.py:88</span></h5>
+            <p>Logs <code>distance_remaining</code> on every 10th feedback message.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ 6. Navigation ============================ -->
+    <section class="uc" id="uc-navigation" data-title="Navigation">
+      <h2><span class="num">6</span>Navigation</h2>
+      <p class="q">How do I get there without hitting anything?</p>
+      <p class="why">No code from this repo here: it's Nav2, configured in <code>nav2_params.yaml</code>. Nodes are started by <code>nav2_bringup</code>.</p>
+      <div class="nav2">
+        <h4>Nav2 nodes in this use case</h4>
+        <table>
+          <tr><th>Node</th><th>Role</th><th>Configured</th></tr>
+          <tr><td>bt_navigator</td><td>Serves <code>navigate_to_pose</code> and runs the behaviour tree: plan → smooth → follow, recover on failure.</td><td>global_frame map, robot_base_frame base_link, odom_topic /utlidar/robot_odom, Humble default trees</td></tr>
+          <tr><td>planner_server</td><td>Global route on the global costmap.</td><td>GridBased = NavfnPlanner, use_astar true, tolerance 0.5, allow_unknown false</td></tr>
+          <tr><td>smoother_server</td><td>Rounds off the route.</td><td>simple_smoother = SimpleSmoother, max_its 1000</td></tr>
+          <tr><td>controller_server</td><td>Follows the path and dodges obstacles on the local costmap; outputs cmd_vel_nav.</td><td>20 Hz, FollowPath = DWBLocalPlanner, max_vel_x 0.8, max_vel_theta 1.0, acc_lim_x 1.0, sim_time 1.5; goal_checker 0.20 m / 0.15 rad; progress_checker 0.5 m in 10 s</td></tr>
+          <tr><td>behavior_server</td><td>Recoveries when stuck; outputs cmd_vel_nav.</td><td>spin, backup, wait; max_rotational_vel 1.0</td></tr>
+          <tr><td>velocity_smoother</td><td>Limits speed and acceleration; cmd_vel_nav → <code>/cmd_vel</code>.</td><td>20 Hz, OPEN_LOOP, max [0.8, 0, 1.0], min [−0.4, 0, −1.0], accel [1.0, 0, 2.0]</td></tr>
+          <tr><td>waypoint_follower</td><td>Started by bringup; not used by this repo's scripts.</td><td>wait_at_waypoint 200 ms</td></tr>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============================ 7. Driving ============================ -->
+    <section class="uc" id="uc-driving" data-title="Driving the robot">
+      <h2><span class="num">7</span>Driving the robot</h2>
+      <p class="q">How do Nav2's commands make the legs move?</p>
+      <p class="why">Nav2 publishes Twist on /cmd_vel; the Go2 only takes Sport API requests.</p>
+
+      <div class="file dog" id="cmd_vel_bridge.py">
+        <header><h3><a href="../../src/go2_bim_nav/go2_bim_nav/cmd_vel_bridge.py">cmd_vel_bridge.py</a></h3><span class="tag">module · launched</span></header>
+        <div class="run">ros2 run go2_bim_nav cmd_vel_bridge   # needs unitree_ros2 sourced first</div>
+        <p>Raises <code>ImportError</code> on import if <code>unitree_api</code> isn't available.</p>
+        <table class="ros">
+          <tr><th>Constant</th><th>Value</th><th></th></tr>
+          <tr><td>ROBOT_SPORT_API_ID_MOVE</td><td>1008</td><td></td></tr>
+          <tr><td>ROBOT_SPORT_API_ID_STOPMOVE</td><td>1003</td><td></td></tr>
+          <tr><td>WATCHDOG_TIMEOUT_SEC</td><td>0.5</td><td></td></tr>
+          <tr><td>WATCHDOG_CHECK_PERIOD_SEC</td><td>0.1</td><td></td></tr>
+        </table>
+        <div class="cls" id="cmd_vel_bridge.CmdVelBridge">
+          <h4>class CmdVelBridge(rclpy.node.Node)</h4>
+          <p>Translates each Twist into a Sport API Move request and stops the robot if commands go quiet.</p>
+          <table class="ros">
+            <tr><th>Interface</th><th>Name</th><th>Type</th></tr>
+            <tr><td>Node</td><td>cmd_vel_to_sport_bridge</td><td></td></tr>
+            <tr><td>Subscribes</td><td>/cmd_vel</td><td>geometry_msgs/Twist</td></tr>
+            <tr><td>Publishes</td><td>/api/sport/request</td><td>unitree_api/msg/Request <span class="warn">· on domain 1, robot usually on 0</span></td></tr>
+            <tr><td>Timer</td><td>0.1 s</td><td>_check_watchdog</td></tr>
+          </table>
+          <div class="fn" id="cmd_vel_bridge.CmdVelBridge.__init__">
+            <h5><code>__init__(self)</code><span class="src">cmd_vel_bridge.py:56</span></h5>
+            <p>Creates the publisher, subscription and watchdog timer. State: <code>_last_msg_time = None</code>, <code>_stopped = True</code>.</p>
+          </div>
+          <div class="fn" id="cmd_vel_bridge.CmdVelBridge._on_cmd_vel">
+            <h5><code>_on_cmd_vel(self, msg: Twist) → None</code><span class="src">cmd_vel_bridge.py:68</span></h5>
+            <p>Records the arrival time, forwards the speeds to <a href="#cmd_vel_bridge.CmdVelBridge._publish_move">_publish_move</a>, and marks the robot stopped if all three are zero.</p>
+            <dl>
+              <dt>Data in</dt><dd><code>/cmd_vel</code> from velocity_smoother</dd>
+              <dt>Data to</dt><dd><code>msg.linear.x, msg.linear.y, msg.angular.z</code> → _publish_move; <code>_last_msg_time</code>, <code>_stopped</code> → <a href="#cmd_vel_bridge.CmdVelBridge._check_watchdog">_check_watchdog</a></dd>
+            </dl>
+          </div>
+          <div class="fn" id="cmd_vel_bridge.CmdVelBridge._publish_move">
+            <h5><code>_publish_move(self, vx, vy, vyaw) → None</code><span class="src">cmd_vel_bridge.py:73</span></h5>
+            <p>Publishes a Request with <code>api_id = 1008</code> and <code>parameter = json.dumps({"x": vx, "y": vy, "z": vyaw})</code>.</p>
+            <table>
+              <tr><th>Parameter</th><th>Type</th><th>Meaning</th></tr>
+              <tr><td>vx, vy</td><td>float</td><td>Forward and sideways speed, m/s.</td></tr>
+              <tr><td>vyaw</td><td>float</td><td>Turn rate, rad/s.</td></tr>
+            </table>
+          </div>
+          <div class="fn" id="cmd_vel_bridge.CmdVelBridge._publish_stop">
+            <h5><code>_publish_stop(self) → None</code><span class="src">cmd_vel_bridge.py:79</span></h5>
+            <p>Publishes a Request with <code>api_id = 1003</code> (StopMove) and no parameter.</p>
+          </div>
+          <div class="fn" id="cmd_vel_bridge.CmdVelBridge._check_watchdog">
+            <h5><code>_check_watchdog(self) → None</code><span class="src">cmd_vel_bridge.py:84</span></h5>
+            <p>Every 0.1 s: if the robot is moving and the last /cmd_vel is older than 0.5 s, logs a warning, calls <a href="#cmd_vel_bridge.CmdVelBridge._publish_stop">_publish_stop</a> once, and marks it stopped.</p>
+          </div>
+        </div>
+        <div class="fn" id="cmd_vel_bridge.main">
+          <h5><code>main()</code><span class="src">cmd_vel_bridge.py:94</span></h5>
+          <p>Spins a CmdVelBridge; on any exit, sends StopMove first so the robot isn't left walking.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ 8. Test tools ============================ -->
+    <section class="uc" id="uc-tests" data-title="Robot test tools">
+      <h2><span class="num">8</span>Robot test tools</h2>
+      <p class="q">Is the robot and network working, without Nav2?</p>
+      <p class="why">Stand-alone scripts in <code>examples/</code>. The obstacles_avoid ones drive the Go2 with its <em>firmware</em> navigation and avoidance through the Unitree SDK, bypassing this repo's Nav2 stack entirely. Run them with the dog standing, clear space around it, and the remote in hand.</p>
+
+      <div class="file fw" id="test_nav2point.py">
+        <header><h3><a href="../../examples/obstacles_avoid/test_nav2point.py">test_nav2point.py</a></h3><span class="tag">script · Unitree SDK</span></header>
+        <div class="run">python3 examples/obstacles_avoid/test_nav2point.py ethrobot</div>
+        <p>Prompts for <code>x y yaw</code>, measured from where the dog started up, and sends it to the firmware's own point navigation. Waits a fixed 15 s per goal (it doesn't check arrival). Stops the dog and releases API control on exit.</p>
+        <div class="fn" id="test_nav2point.enable_obstacle_avoidance">
+          <h5><code>enable_obstacle_avoidance(client, timeout=5.0) → bool</code><span class="src">test_nav2point.py:9</span></h5>
+          <p>Calls <code>SwitchSet(True)</code> until <code>SwitchGet()</code> reports it on, or the timeout passes. Same function is duplicated in test_vel_command.py.</p>
+        </div>
+        <div class="fn" id="test_nav2point.prompt_goal">
+          <h5><code>prompt_goal() → (x, y, yaw) | None</code><span class="src">test_nav2point.py:19</span></h5>
+          <p>Reads three numbers from the terminal; <code>q</code> returns None.</p>
+        </div>
+        <div class="fn" id="test_nav2point.__main__">
+          <h5><code>__main__ block</code><span class="src">test_nav2point.py:33</span></h5>
+          <p><code>ChannelFactoryInitialize(0, iface)</code> → <code>ObstaclesAvoidClient</code> → enable avoidance → <code>UseRemoteCommandFromApi(True)</code> → loop <code>MoveToAbsolutePosition(x, y, yaw)</code>. Finally <code>Move(0, 0, 0)</code> and release control.</p>
+        </div>
+      </div>
+
+      <div class="file fw" id="test_vel_command.py">
+        <header><h3><a href="../../examples/obstacles_avoid/test_vel_command.py">test_vel_command.py</a></h3><span class="tag">script · Unitree SDK</span></header>
+        <div class="run">python3 examples/obstacles_avoid/test_vel_command.py ethrobot</div>
+        <p>Prompts for <code>vx vy vyaw</code> and moves at that speed for 2 s with avoidance on, sending zero-speed keep-alives at 10 Hz between commands.</p>
+        <div class="fn" id="test_vel_command.enable_obstacle_avoidance">
+          <h5><code>enable_obstacle_avoidance(client, timeout=5.0) → bool</code><span class="src">test_vel_command.py:11</span></h5>
+          <p>Same as in test_nav2point.py.</p>
+        </div>
+        <div class="fn" id="test_vel_command.prompt_velocity">
+          <h5><code>prompt_velocity() → (vx, vy, vyaw) | None</code><span class="src">test_vel_command.py:21</span></h5>
+          <p>Reads three numbers (m/s, m/s, rad/s); <code>q</code> returns None.</p>
+        </div>
+        <div class="fn" id="test_vel_command.keepalive_loop">
+          <h5><code>keepalive_loop(client, stop_event) → None</code><span class="src">test_vel_command.py:35</span></h5>
+          <p>Thread body: sends <code>Move(0, 0, 0)</code> at <code>KEEPALIVE_HZ</code> (10) until <code>stop_event</code> is set. Paused while a real move runs.</p>
+        </div>
+      </div>
+
+      <div class="file fw" id="obstacles_avoid_move.py">
+        <header><h3><a href="../../examples/obstacles_avoid/obstacles_avoid_move.py">obstacles_avoid_move.py</a></h3><span class="tag">script · Unitree SDK</span></header>
+        <p>Turns avoidance on, walks forward at 0.5 m/s for 1 s, stops, then calls <code>MoveToAbsolutePosition(0, 0, 0)</code> and <code>MoveToIncrementPosition(0, 0, 0)</code>. No functions; everything is in the <code>__main__</code> block.</p>
+      </div>
+
+      <div class="file fw" id="obstacles_avoid_switch.py">
+        <header><h3><a href="../../examples/obstacles_avoid/obstacles_avoid_switch.py">obstacles_avoid_switch.py</a></h3><span class="tag">script · Unitree SDK</span></header>
+        <p>Loops forever, every 3 s: prints the API version, then toggles the avoidance switch on and off and reads it back. Useful to see whether the firmware's avoidance is currently on. No functions.</p>
+      </div>
+
+      <div class="file dog" id="pub_test.py">
+        <header><h3><a href="../../examples/pub_test.py">pub_test.py</a></h3><span class="tag">module · ROS</span></header>
+        <div class="run">python3 examples/pub_test.py          # then elsewhere: ros2 topic echo /chatter</div>
+        <div class="fn" id="pub_test.main">
+          <h5><code>main() → int</code><span class="src">pub_test.py:24</span></h5>
+          <p>Node <code>pub_test</code> publishes <code>"hello world N"</code> (std_msgs/String) on <code>/chatter</code> every 1 s via a nested <code>tick()</code>. If another machine on ROS domain 1 sees it, the ROS network works.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+(function () {
+  // Build the sidebar from the page, so it always matches the content.
+  var toc = document.getElementById('toc');
+  var sections = document.querySelectorAll('section.uc');
+  sections.forEach(function (sec) {
+    var li = document.createElement('li');
+    var a = document.createElement('a');
+    a.className = 'uc-link'; a.href = '#' + sec.id;
+    a.textContent = sec.querySelector('h2').textContent.replace(/^(\d)/, '$1 · ');
+    li.appendChild(a);
+    sec.querySelectorAll('.file').forEach(function (file) {
+      var fa = document.createElement('a');
+      fa.className = 'file-link'; fa.href = '#' + file.id;
+      fa.textContent = file.querySelector('h3').textContent;
+      fa.style.setProperty('--c', getComputedStyle(file).getPropertyValue('--c'));
+      li.appendChild(fa);
+      file.querySelectorAll('.fn').forEach(function (fn) {
+        var code = fn.querySelector('h5 code').textContent;
+        var name = code.split('(')[0].trim();
+        var cls = fn.closest('.cls');
+        if (cls) name = cls.querySelector('h4').textContent.replace(/^class\s+|\(.*$/g, '') + '.' + name;
+        var na = document.createElement('a');
+        na.className = 'fn-link'; na.href = '#' + fn.id; na.textContent = name;
+        na.dataset.target = fn.id;
+        li.appendChild(na);
+      });
+    });
+    toc.appendChild(li);
+  });
+
+  // Filter functions by name or text.
+  var q = document.getElementById('q');
+  var empty = document.getElementById('empty');
+  q.addEventListener('input', function () {
+    var term = q.value.trim().toLowerCase();
+    var any = false;
+    document.querySelectorAll('.fn').forEach(function (fn) {
+      var hit = !term || fn.textContent.toLowerCase().indexOf(term) >= 0;
+      fn.classList.toggle('hidden', !hit);
+      any = any || hit;
+    });
+    document.querySelectorAll('.cls').forEach(function (c) {
+      c.classList.toggle('hidden', !!term && !c.querySelector('.fn:not(.hidden)'));
+    });
+    document.querySelectorAll('.file').forEach(function (f) {
+      f.classList.toggle('hidden', !!term && !f.querySelector('.fn:not(.hidden)'));
+    });
+    document.querySelectorAll('section.uc').forEach(function (s) {
+      s.classList.toggle('hidden', !!term && !s.querySelector('.fn:not(.hidden)'));
+    });
+    document.querySelectorAll('.fn-link').forEach(function (a) {
+      a.classList.toggle('hidden', document.getElementById(a.dataset.target).classList.contains('hidden'));
+    });
+    empty.style.display = any ? 'none' : 'block';
+  });
+})();
+</script>
+</body>
+</html>

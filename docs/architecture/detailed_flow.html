@@ -8,15 +8,18 @@
   :root {
     --bg: #f7f6f2;
     --surface: #ffffff;
+    --uc: #fbfaf7;
     --ink: #1d1d1b;
     --muted: #5f5e58;
     --line: #d9d6cc;
     --arrow: #8a877c;
+    --call: #a9a69b;
     --warn: #b3261e;
     --ws: #2f6f9f;      --ws-soft: #e6f0f7;
     --dog: #3a7d44;     --dog-soft: #e8f3ea;
     --fw: #a35a1f;      --fw-soft: #f8ece1;
     --nav: #6b4fa0;     --nav-soft: #efeaf7;
+    --file: #6d6a60;    --file-soft: #f1efe9;
     --mono: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace;
     --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   }
@@ -24,146 +27,185 @@
     :root {
       --bg: #161614;
       --surface: #201f1c;
+      --uc: #1b1a18;
       --ink: #ecebe6;
       --muted: #a8a69d;
       --line: #3a3934;
       --arrow: #8d8a80;
+      --call: #6c6a62;
       --warn: #ff8a80;
       --ws: #7fb4dc;      --ws-soft: #1b2a35;
       --dog: #86c48f;     --dog-soft: #1c2b1f;
       --fw: #e2a06a;      --fw-soft: #34261a;
       --nav: #b8a2e3;     --nav-soft: #2a2336;
+      --file: #b5b2a7;    --file-soft: #272622;
     }
   }
   * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    background: var(--bg);
-    color: var(--ink);
-    font: 15px/1.5 var(--sans);
-  }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 var(--sans); }
   main { padding: 32px 16px 56px; }
   .narrow { max-width: 1180px; margin: 0 auto; }
   h1 { font-size: 1.6rem; margin: 0 0 4px; letter-spacing: -0.01em; }
   h2 { font-size: 1.1rem; margin: 36px 0 12px; }
-  .lede { color: var(--muted); margin: 0 0 18px; max-width: 78ch; }
+  .lede { color: var(--muted); margin: 0 0 18px; max-width: 80ch; }
   a { color: inherit; }
   code { font-family: var(--mono); font-size: 0.86em; }
+  .back { font-size: 0.85rem; }
 
-  .legend { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 0.8rem; color: var(--muted); }
+  .legend { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 0.8rem; color: var(--muted); }
   .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
-  .legend .dash { background: none !important; border: 1.5px dashed var(--warn); }
-  .legend .line { width: 22px; height: 0; border-top: 1.6px solid var(--arrow); border-radius: 0; vertical-align: 3px; }
-  .legend .line.d { border-top-style: dashed; }
+  .legend .ln { width: 24px; height: 0; border-radius: 0; vertical-align: 3px; border-top: 1.8px solid var(--arrow); }
+  .legend .ln.call { border-top: 1.2px solid var(--call); }
+  .legend .ln.file { border-top: 1.8px dashed var(--arrow); }
+  .legend .ln.state { border-top: 2px dotted var(--arrow); }
+  .legend .ln.gap { border-top: 1.8px dashed var(--warn); }
+  .legend .box-dash { background: none !important; border: 1.5px dashed var(--warn); }
+  .legend-group { display: flex; flex-wrap: wrap; gap: 8px 18px; }
+  .legend-group + .legend-group { margin-top: 6px; }
 
-  /* ---- Startup strip ---- */
-  .startup {
-    display: flex; flex-wrap: wrap; align-items: stretch; gap: 8px 0;
-    background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px;
-  }
+  /* Startup strip */
+  .startup { display: flex; flex-wrap: wrap; gap: 8px 0; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px; }
   .step { display: flex; align-items: center; }
   .step + .step::before { content: "→"; color: var(--arrow); padding: 0 10px; }
-  .step div {
-    background: var(--dog-soft); border: 1px solid color-mix(in srgb, var(--dog) 35%, transparent);
-    border-radius: 8px; padding: 6px 10px; font-size: 0.8rem; max-width: 330px;
-  }
+  .step div { background: var(--dog-soft); border: 1px solid color-mix(in srgb, var(--dog) 35%, transparent); border-radius: 8px; padding: 6px 10px; font-size: 0.8rem; max-width: 330px; }
   .step b { font-family: var(--mono); font-size: 0.82rem; display: block; }
   .step span { color: var(--muted); display: block; font-family: var(--mono); font-size: 0.74rem; }
   .byhand { margin: 8px 0 0; font-size: 0.82rem; color: var(--muted); }
 
-  /* ---- Diagram ---- */
+  /* Diagram */
   .toolbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: 0 auto 8px; max-width: 1180px; }
   .toolbar p { margin: 0; font-size: 0.82rem; color: var(--muted); }
-  button {
-    font: inherit; font-size: 0.82rem; color: var(--ink); background: var(--surface);
-    border: 1px solid var(--line); border-radius: 6px; padding: 4px 10px; cursor: pointer;
-  }
+  button { font: inherit; font-size: 0.82rem; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 4px 10px; cursor: pointer; }
   button:hover { border-color: var(--arrow); }
-  #wrap {
-    position: relative; overflow-x: auto; overflow-y: hidden;
-    background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
-  }
+  #wrap { position: relative; overflow-x: auto; overflow-y: hidden; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
   #canvas {
     position: relative; width: max-content; transform-origin: 0 0;
-    display: grid; grid-template-columns: repeat(6, 238px); column-gap: 66px; row-gap: 28px;
-    padding: 18px 30px 78px 34px; align-items: start;
+    display: grid; grid-template-columns: 380px 340px 640px 380px; column-gap: 96px; row-gap: 56px;
+    padding: 28px 40px 90px 44px; align-items: start;
   }
-  .lane {
-    grid-row: 1; font-size: 0.74rem; font-weight: 650; text-transform: uppercase; letter-spacing: 0.06em;
-    color: var(--muted); border-bottom: 1px solid var(--line); padding-bottom: 4px;
-  }
-  .card {
-    position: relative; z-index: 1;
-    background: var(--soft); border: 1.5px solid var(--c); border-radius: 9px;
-    padding: 8px 10px 9px; font-size: 0.78rem; transition: opacity .15s;
-  }
-  .card.ws  { --c: var(--ws);  --soft: var(--ws-soft); }
-  .card.dog { --c: var(--dog); --soft: var(--dog-soft); }
-  .card.nav { --c: var(--nav); --soft: var(--nav-soft); }
-  .card.fw  { --c: var(--fw);  --soft: var(--fw-soft); }
-  .card.gap { border-style: dashed; }
-  .card header { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; }
-  .card h3 { margin: 0; font-family: var(--mono); font-size: 0.86rem; font-weight: 700; }
-  .card h3 a { text-decoration: none; }
-  .card h3 a:hover { text-decoration: underline; }
-  .tag { font-size: 0.66rem; color: var(--c); border: 1px solid color-mix(in srgb, var(--c) 45%, transparent); border-radius: 999px; padding: 0 6px; white-space: nowrap; }
-  .what { margin: 1px 0 6px; color: var(--muted); font-size: 0.78rem; }
-  .sig { margin: 0; padding: 0; list-style: none; font-family: var(--mono); font-size: 0.7rem; line-height: 1.45; }
-  .sig li { padding-left: 10px; text-indent: -10px; margin-bottom: 2px; overflow-wrap: anywhere; }
-  .sig li.sub { padding-left: 20px; }
-  .sig b { color: var(--c); font-weight: 700; }
-  .warnline { margin: 6px 0 0; color: var(--warn); font-size: 0.72rem; }
 
-  #edges { position: absolute; left: 0; top: 0; z-index: 2; pointer-events: none; overflow: visible; }
-  #edges .e { fill: none; stroke: var(--arrow); stroke-width: 1.5; marker-end: url(#ah); transition: opacity .15s; }
-  #edges .e.bi { marker-start: url(#ah); }
-  #edges .e.loop, #edges .e.gapline { stroke-dasharray: 5 4; }
-  #edges .e.gapline { stroke: var(--warn); }
+  /* Level 1: use case */
+  .uc { position: relative; background: var(--uc); border: 1.5px solid var(--line); border-radius: 14px; padding: 12px 14px 16px; }
+  .uc > h3 { margin: 0; font-size: 1.02rem; letter-spacing: -0.005em; }
+  .uc > h3 .num { color: var(--muted); font-weight: 500; margin-right: 6px; }
+  .uc > .q { margin: 0 0 4px; font-size: 0.84rem; color: var(--muted); font-style: italic; }
+  .uc > .why { margin: 0 0 10px; font-size: 0.76rem; color: var(--muted); }
+  .uc .stack { display: flex; flex-direction: column; gap: 14px; }
+  .uc .cols { display: grid; grid-template-columns: 1fr 1fr; column-gap: 44px; align-items: start; }
+  .uc .cols > .stack { min-width: 0; }
+
+  /* Level 2: class / module / node / file */
+  .cls { position: relative; background: var(--soft); border: 1.5px solid var(--c); border-radius: 10px; padding: 7px 9px 8px; transition: opacity .15s; }
+  .cls.ws  { --c: var(--ws);  --soft: var(--ws-soft); }
+  .cls.dog { --c: var(--dog); --soft: var(--dog-soft); }
+  .cls.nav { --c: var(--nav); --soft: var(--nav-soft); }
+  .cls.fw  { --c: var(--fw);  --soft: var(--fw-soft); }
+  .cls.file { --c: var(--file); --soft: var(--file-soft); border-style: dashed; }
+  .cls.gap { border-style: dashed; }
+  .cls .cls { background: var(--surface); margin-top: 6px; }
+  .cls > header { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; margin-bottom: 4px; }
+  .cls h4 { margin: 0; font-family: var(--mono); font-size: 0.82rem; font-weight: 700; overflow-wrap: anywhere; }
+  .cls h4 a { text-decoration: none; }
+  .cls h4 a:hover { text-decoration: underline; }
+  .tag { font-size: 0.64rem; color: var(--c); border: 1px solid color-mix(in srgb, var(--c) 45%, transparent); border-radius: 999px; padding: 0 6px; white-space: nowrap; }
+  .cls .why { margin: 0 0 5px; font-size: 0.72rem; color: var(--muted); }
+  .cls .warnline { margin: 5px 0 0; font-size: 0.72rem; color: var(--warn); }
+
+  /* Level 3: function / plugin rows */
+  .fns { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 3px; }
+  .fn {
+    font-family: var(--mono); font-size: 0.7rem; line-height: 1.4;
+    background: var(--surface); border: 1px solid color-mix(in srgb, var(--c) 28%, transparent);
+    border-radius: 5px; padding: 3px 6px 3px 16px; text-indent: -10px; overflow-wrap: anywhere;
+    transition: opacity .15s, border-color .15s;
+  }
+  .cls .cls .fn { background: var(--soft); }
+  .fn b { color: var(--c); font-weight: 700; }
+  .fn.cfg { font-style: italic; }
+  .fn .tune { font-family: var(--sans); font-style: normal; font-size: 0.62rem; color: var(--fw); border: 1px solid color-mix(in srgb, var(--fw) 50%, transparent); border-radius: 999px; padding: 0 5px; margin-left: 4px; white-space: nowrap; }
+  .fn .warn { color: var(--warn); }
+
+  /* Edges */
+  #edges { position: absolute; left: 0; top: 0; z-index: 5; pointer-events: none; overflow: visible; }
+  #edges .e { fill: none; stroke: var(--arrow); stroke-width: 1.5; marker-end: url(#ah); transition: opacity .15s; opacity: 0.85; }
+  #edges .e.call { stroke: var(--call); stroke-width: 1.1; marker-end: url(#ahc); }
+  #edges .e.file { stroke-dasharray: 6 4; }
+  #edges .e.state { stroke-dasharray: 1.5 3.5; stroke-linecap: round; stroke-width: 1.8; }
+  #edges .e.gap { stroke: var(--warn); stroke-dasharray: 6 4; marker-end: url(#ahw); }
+  #edges .e.loop { stroke-dasharray: 6 4; }
+  #edges .e.bi { marker-start: url(#ahc); }
   #edges .ah { fill: var(--arrow); }
+  #edges .ahc { fill: var(--call); }
+  #edges .ahw { fill: var(--warn); }
   #edges .badge { pointer-events: auto; cursor: default; transition: opacity .15s; }
   #edges .badge circle { fill: var(--surface); stroke: var(--arrow); stroke-width: 1.2; }
-  #edges .badge text { font: 700 10px var(--sans); fill: var(--ink); text-anchor: middle; dominant-baseline: central; }
-  #edges .badge.gapline circle { stroke: var(--warn); }
+  #edges .badge.call circle { stroke: var(--call); }
+  #edges .badge.gap circle { stroke: var(--warn); }
+  #edges .badge text { font: 700 9.5px var(--sans); fill: var(--ink); text-anchor: middle; dominant-baseline: central; }
 
-  .focus .card:not(.hl) { opacity: 0.35; }
-  .focus #edges .e:not(.hl), .focus #edges .badge:not(.hl) { opacity: 0.12; }
-  #edges .e.hl { stroke: var(--ink); stroke-width: 2.2; }
-  #edges .e.hl.gapline { stroke: var(--warn); }
+  #canvas.focus .fn:not(.hl), #canvas.focus .cls:not(.hl-in) > header { opacity: 0.3; }
+  #canvas.focus #edges .e:not(.hl), #canvas.focus #edges .badge:not(.hl) { opacity: 0.07; }
+  #edges .e.hl { opacity: 1; stroke-width: 2.3; stroke: var(--ink); }
+  #edges .e.hl.gap { stroke: var(--warn); }
   #edges .badge.hl circle { stroke: var(--ink); stroke-width: 2; }
+  .fn.hl { border-color: var(--ink); }
 
-  /* ---- Table ---- */
+  #tip {
+    position: fixed; z-index: 50; pointer-events: none; display: none; max-width: 360px;
+    background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 8px;
+    box-shadow: 0 6px 24px rgba(0,0,0,.18); padding: 8px 10px; font-size: 0.8rem;
+  }
+  #tip b { font-family: var(--mono); font-size: 0.78rem; display: block; margin-bottom: 2px; }
+  #tip .ft { color: var(--muted); font-family: var(--mono); font-size: 0.72rem; display: block; margin-bottom: 4px; }
+
+  /* Table and notes */
   .tablewrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
   table { border-collapse: collapse; width: 100%; font-size: 0.82rem; }
-  th, td { text-align: left; vertical-align: top; padding: 7px 10px; border-bottom: 1px solid var(--line); }
-  th { font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 650; }
-  tr:last-child td { border-bottom: 0; }
+  th, td { text-align: left; vertical-align: top; padding: 6px 10px; border-bottom: 1px solid var(--line); }
+  th { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 650; }
+  tr.grp td { background: var(--uc); font-weight: 650; font-size: 0.8rem; padding-top: 10px; }
   td.n { font-weight: 700; width: 32px; }
-  td.ft { white-space: nowrap; font-family: var(--mono); font-size: 0.78rem; }
-  td.what { font-family: var(--mono); font-size: 0.78rem; }
+  td.ft { font-family: var(--mono); font-size: 0.74rem; }
+  td.what { font-family: var(--mono); font-size: 0.76rem; }
   td.det { color: var(--muted); }
-  tbody tr:hover, tbody tr.hl { background: color-mix(in srgb, var(--arrow) 12%, transparent); }
+  td.kind { font-size: 0.72rem; color: var(--muted); white-space: nowrap; }
+  tbody tr:not(.grp):hover { background: color-mix(in srgb, var(--arrow) 12%, transparent); }
   tr.gaprow td.det { color: var(--warn); }
 
-  .back { font-size: 0.85rem; }
+  .notes { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
+  .note { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; font-size: 0.86rem; }
+  .note h3 { margin: 0 0 6px; font-size: 0.95rem; }
+  .note ul { margin: 0; padding-left: 18px; }
+  .note li { margin-bottom: 4px; }
+  .note p { margin: 8px 0 0; color: var(--muted); font-size: 0.82rem; }
 </style>
 </head>
 <body>
 <main>
 <div class="narrow">
-  <p class="back"><a href="overall_flow.html">← Simple overview</a></p>
+  <p class="back"><a href="overall_flow.html">← Simple overview</a> · <a href="api.html">API reference</a></p>
   <h1>go2_bim_nav: detailed flow</h1>
-  <p class="lede">The same flow as the overview, opened up: every class, function and node, what each one is given,
-    and what it passes on. This is how the whole thing would run end to end with the code as written. Two spots marked ⚠
-    are where the repo is missing a piece.</p>
+  <p class="lede">Grouped three levels deep: each big box is a <strong>use case</strong> (what the robot needs to do),
+    the boxes inside are the <strong>files, classes and nodes</strong> that do it, and the rows inside those are the
+    <strong>functions</strong> (or, for Nav2, the plugins and settings this repo configures). Arrows run between functions and are
+    numbered; the table below says exactly what data each one carries.</p>
 
   <div class="legend" aria-hidden="true">
-    <span><i style="background:var(--ws)"></i>Workstation, offline</span>
-    <span><i style="background:var(--dog)"></i>This repo's code on the dog</span>
-    <span><i style="background:var(--nav)"></i>Nav2 on the dog</span>
-    <span><i style="background:var(--fw)"></i>Go2 robot</span>
-    <span><i class="dash"></i>⚠ missing or unverified</span>
-    <span><i class="line"></i>data passed</span>
-    <span><i class="line d"></i>loop back</span>
+    <div class="legend-group">
+      <span><i style="background:var(--ws)"></i>Workstation, offline</span>
+      <span><i style="background:var(--dog)"></i>This repo's code on the dog</span>
+      <span><i style="background:var(--nav)"></i>Nav2 on the dog</span>
+      <span><i style="background:var(--fw)"></i>Go2 robot</span>
+      <span><i style="background:var(--file)"></i>File</span>
+      <span><i class="box-dash"></i>⚠ missing or unverified</span>
+    </div>
+    <div class="legend-group">
+      <span><i class="ln"></i>ROS topic, action or tf</span>
+      <span><i class="ln call"></i>direct call / return value</span>
+      <span><i class="ln file"></i>file, or loop back</span>
+      <span><i class="ln state"></i>shared state on <code>self</code></span>
+      <span><i class="ln gap"></i>⚠ link that may not work</span>
+    </div>
   </div>
 
   <h2>Startup</h2>
@@ -173,305 +215,380 @@
     <div class="step"><div><b>ros2 launch go2_bim_nav bim_nav_bringup.launch.py</b><span>map:=… lidar_cloud_topic:=/utlidar/cloud scan_topic:=/scan use_odom_to_tf:=true</span></div></div>
     <div class="step"><div><b>generate_launch_description()</b><span>Node(pointcloud_to_laserscan), Node(odom_to_tf), Node(cmd_vel_bridge), IncludeLaunchDescription(nav2_bringup/bringup_launch.py, map, params_file, use_sim_time, autostart=true)</span></div></div>
   </div>
-  <p class="byhand">Started by hand in other shells: <code>python3 examples/lidar_bridge.py</code> and <code>ros2 run go2_bim_nav send_goal …</code>. Cards are tagged <em>launched</em>, <em>nav2_bringup</em> or <em>by hand</em> to match.</p>
+  <p class="byhand">Started by hand in other shells: <code>python3 examples/lidar_bridge.py</code> and <code>ros2 run go2_bim_nav send_goal …</code>. Boxes are tagged <em>launched</em>, <em>nav2_bringup</em> or <em>by hand</em> to match.</p>
 
   <h2>Flow</h2>
 </div>
 
   <div class="toolbar">
-    <p>Hover a card, a numbered badge or a table row to trace its connections.</p>
+    <p>Hover a function, a box title or a numbered badge to trace its connections.</p>
     <button id="fit" type="button">Actual size</button>
   </div>
   <div id="wrap">
     <div id="canvas">
-      <div class="lane" style="grid-column:1">Inputs</div>
-      <div class="lane" style="grid-column:2">Bridges &amp; sensing</div>
-      <div class="lane" style="grid-column:3">Nav2 · where am I, what's around</div>
-      <div class="lane" style="grid-column:4">Nav2 · goal &amp; route</div>
-      <div class="lane" style="grid-column:5">Nav2 · follow &amp; smooth</div>
-      <div class="lane" style="grid-column:6">Drive the robot</div>
 
-      <!-- Column 1: inputs -->
-      <article class="card ws" id="list_spaces" style="grid-column:1;grid-row:2">
-        <header><h3><a href="../../src/go2_bim_nav/go2_bim_nav/list_spaces.py">list_spaces.py</a></h3><span class="tag">workstation</span></header>
-        <p class="what">Room names → coordinates</p>
-        <ul class="sig">
-          <li><b>main</b>(--input model.ifc)</li>
-          <li>settings = make_geom_settings()</li>
-          <li>for IfcSpace: create_shape(settings, space) → centroid (cx, cy)</li>
-          <li>prints name, x, y → copy into waypoints.yaml</li>
-        </ul>
-      </article>
+      <!-- ===================== 1. Mapping ===================== -->
+      <section class="uc" id="uc_map" style="grid-column:1;grid-row:1">
+        <h3><span class="num">1</span>Mapping</h3>
+        <p class="q">What does the building look like?</p>
+        <p class="why">Made offline on a workstation: IfcOpenShell needs Python 3.10+, the Jetson has 3.8 and is the slowest machine around. Only the .pgm + .yaml cross over.</p>
+        <div class="stack">
+          <div class="cls ws" id="c_itm">
+            <header><h4><a href="../../src/go2_bim_nav/go2_bim_nav/ifc_to_map.py">ifc_to_map.py</a></h4><span class="tag">module · workstation</span></header>
+            <p class="why">Rasterises only permanent vertical barriers. Slabs and roofs would blank whole rooms; doors and furniture change, so the LiDAR handles them. Door footprints are carved back to free space because many IFC files don't model the wall opening.</p>
+            <ul class="fns">
+              <li class="fn" id="itm_main"><b>main</b>(--input, --output, --resolution 0.05, --padding 1.0, --storey, --include-types, --no-clear-doors, --door-padding 0.05)</li>
+              <li class="fn" id="itm_settings"><b>make_geom_settings</b>() → settings (world coords)</li>
+              <li class="fn" id="itm_storey"><b>get_storey_name</b>(element) → storey name</li>
+              <li class="fn" id="itm_tri"><b>project_triangles</b>(model, include_types, storey_name) → yields [(x, y)×3]</li>
+              <li class="fn" id="itm_doors"><b>door_bounding_boxes</b>(model, storey_name, padding) → yields (min_x, min_y, max_x, max_y)</li>
+              <li class="fn" id="itm_raster"><b>rasterise</b>(triangles, resolution, padding, clear_boxes) → (img, origin)</li>
+              <li class="fn" id="itm_write"><b>write_map</b>(img, origin, resolution, output_prefix) → (pgm_path, yaml_path)</li>
+            </ul>
+          </div>
+          <div class="cls file" id="c_mapfiles">
+            <header><h4>bim_map.pgm + bim_map.yaml</h4><span class="tag">file</span></header>
+            <ul class="fns"><li class="fn cfg" id="map_files">image, resolution, origin [min_x, min_y, 0], negate 0, occupied_thresh 0.65, free_thresh 0.25</li></ul>
+          </div>
+          <div class="cls ws" id="c_pm">
+            <header><h4><a href="../../src/go2_bim_nav/go2_bim_nav/preview_map.py">preview_map.py</a></h4><span class="tag">module · workstation</span></header>
+            <ul class="fns"><li class="fn" id="pm_main"><b>main</b>(--map, --save) → map image with a metre grid, true aspect ratio</li></ul>
+          </div>
+          <div class="cls nav" id="c_ms">
+            <header><h4>map_server</h4><span class="tag">nav2_bringup</span></header>
+            <ul class="fns">
+              <li class="fn cfg" id="ms_in">yaml_filename ← launch arg map</li>
+              <li class="fn cfg" id="ms_out">publishes /map (OccupancyGrid)</li>
+            </ul>
+          </div>
+        </div>
+      </section>
 
-      <article class="card fw" id="go2_lidar" style="grid-column:1;grid-row:3">
-        <header><h3>Go2 LiDAR</h3><span class="tag">robot</span></header>
-        <p class="what">Built-in head LiDAR (utlidar)</p>
-        <ul class="sig">
-          <li>publishes rt/utlidar/cloud_base</li>
-          <li>type PointCloud2_ (unitree IDL)</li>
-          <li>CycloneDDS, domain 0, iface ethrobot</li>
-        </ul>
-      </article>
+      <!-- ===================== 2. Sensing ===================== -->
+      <section class="uc" id="uc_sense" style="grid-column:1;grid-row:2">
+        <h3><span class="num">2</span>Sensing</h3>
+        <p class="q">How does robot data reach ROS?</p>
+        <p class="why">The Go2 publishes on its own network (CycloneDDS, domain 0). Everything else runs on ROS domain 1, so data has to be bridged across.</p>
+        <div class="stack">
+          <div class="cls fw" id="c_robot">
+            <header><h4>Go2 robot (built-in sensors)</h4><span class="tag">robot</span></header>
+            <ul class="fns">
+              <li class="fn cfg" id="r_lidar">LiDAR → rt/utlidar/cloud_base (PointCloud2_, domain 0, ethrobot)</li>
+              <li class="fn cfg" id="r_odom">Odometry → /utlidar/robot_odom (Odometry) <span class="warn">⚠ not bridged to domain 1 by anything in the repo</span></li>
+            </ul>
+          </div>
+          <div class="cls dog" id="c_lb">
+            <header><h4><a href="../../examples/lidar_bridge.py">lidar_bridge.py</a></h4><span class="tag">module · by hand</span></header>
+            <ul class="fns">
+              <li class="fn" id="lb_main"><b>main</b>(): ChannelFactoryInitialize(0, "ethrobot"); ChannelSubscriber(IN_TOPIC, PointCloud2_).Init(on_cloud, 10); pub = create_publisher(PointCloud2, "/utlidar/cloud", SENSOR_DATA)</li>
+              <li class="fn" id="lb_on"><b>on_cloud</b>(msg: PointCloud2_) → pub.publish(...)</li>
+              <li class="fn" id="lb_conv"><b>to_ros_cloud</b>(msg, PointCloud2, PointField, clock) → PointCloud2</li>
+            </ul>
+          </div>
+          <div class="cls dog" id="c_p2l">
+            <header><h4>pointcloud_to_laserscan</h4><span class="tag">launched</span></header>
+            <ul class="fns">
+              <li class="fn cfg" id="p2l_in">cloud_in ← lidar_cloud_topic (/utlidar/cloud)</li>
+              <li class="fn cfg" id="p2l_cfg">target_frame base_link, slice 0.05–0.35 m<span class="tune">tune</span></li>
+              <li class="fn cfg" id="p2l_out">publishes /scan (LaserScan), −π…π, 0.15–12 m</li>
+            </ul>
+          </div>
+        </div>
+      </section>
 
-      <article class="card ws" id="ifc_to_map" style="grid-column:1;grid-row:5">
-        <header><h3><a href="../../src/go2_bim_nav/go2_bim_nav/ifc_to_map.py">ifc_to_map.py</a></h3><span class="tag">workstation</span></header>
-        <p class="what">BIM model → floor map</p>
-        <ul class="sig">
-          <li><b>main</b>(--input, --output, --resolution 0.05, --padding 1.0, --storey, --include-types, --no-clear-doors, --door-padding 0.05)</li>
-          <li><b>project_triangles</b>(model, include_types, storey_name) → yields [(x, y)×3]</li>
-          <li><b>door_bounding_boxes</b>(model, storey_name, padding) → (min_x, min_y, max_x, max_y)</li>
-          <li><b>rasterise</b>(triangles, resolution, padding, clear_boxes) → (img, origin)</li>
-          <li><b>write_map</b>(img, origin, resolution, output_prefix) → .pgm, .yaml</li>
-          <li>check with preview_map.py <b>main</b>(--map, --save)</li>
-        </ul>
-      </article>
+      <!-- ===================== 3. Obstacle sensing ===================== -->
+      <section class="uc" id="uc_obs" style="grid-column:2;grid-row:1">
+        <h3><span class="num">3</span>Obstacle sensing</h3>
+        <p class="q">What's in the way that the BIM doesn't know about?</p>
+        <p class="why">Layers stack top to bottom: the BIM is trusted, the LiDAR adds anything extra, inflation keeps a margin.</p>
+        <div class="stack">
+          <div class="cls nav" id="c_gc">
+            <header><h4>global_costmap</h4><span class="tag">nav2_bringup</span></header>
+            <ul class="fns">
+              <li class="fn cfg" id="gc_static">StaticLayer ← /map (BIM walls)</li>
+              <li class="fn cfg" id="gc_obs">ObstacleLayer ← /scan (people, boxes, closed doors)</li>
+              <li class="fn cfg" id="gc_inf">InflationLayer radius 0.4, scale 3.0 → global costmap</li>
+            </ul>
+          </div>
+          <div class="cls nav" id="c_lc">
+            <header><h4>local_costmap</h4><span class="tag">nav2_bringup</span></header>
+            <p class="why">Rolling 6×6 m window in the odom frame, 10 Hz.</p>
+            <ul class="fns">
+              <li class="fn cfg" id="lc_obs">ObstacleLayer ← /scan</li>
+              <li class="fn cfg" id="lc_inf">InflationLayer radius 0.4 → local costmap</li>
+              <li class="fn cfg" id="lc_fp">footprint 0.70 × 0.32 m placeholder (both costmaps)<span class="tune">tune</span></li>
+            </ul>
+          </div>
+        </div>
+      </section>
 
-      <article class="card fw gap" id="go2_odom" style="grid-column:1;grid-row:6">
-        <header><h3>Go2 odometry</h3><span class="tag">robot</span></header>
-        <p class="what">The robot's own motion estimate</p>
-        <ul class="sig">
-          <li>topic /utlidar/robot_odom</li>
-          <li>nav_msgs/Odometry, frame odom → child base_link</li>
-          <li>also read directly by bt_navigator, controller_server, velocity_smoother (odom_topic)</li>
-        </ul>
-        <p class="warnline">⚠ Nothing in the repo puts this on ROS domain 1. WALKTHROUGH's lidar_restamp.py may have, but it's missing.</p>
-      </article>
+      <!-- ===================== 4. Localization ===================== -->
+      <section class="uc" id="uc_loc" style="grid-column:2;grid-row:2">
+        <h3><span class="num">4</span>Localization</h3>
+        <p class="q">Where am I on the map?</p>
+        <p class="why">Odometry drifts; AMCL corrects it by matching the scan to the BIM walls. Lining up the start pose with BIM coordinates is the trickiest part of setup.</p>
+        <div class="stack">
+          <div class="cls dog" id="c_ot">
+            <header><h4><a href="../../src/go2_bim_nav/go2_bim_nav/odom_to_tf.py">odom_to_tf.py</a></h4><span class="tag">launched</span></header>
+            <div class="cls dog" id="c_ot_cls">
+              <header><h4>class OdomToTf(Node)</h4></header>
+              <ul class="fns">
+                <li class="fn" id="ot_init"><b>__init__</b>(): TransformBroadcaster(self); create_subscription(Odometry, '/utlidar/robot_odom', _on_odom, qos_profile_sensor_data)</li>
+                <li class="fn" id="ot_on"><b>_on_odom</b>(msg: Odometry) → sendTransform(TransformStamped)</li>
+              </ul>
+            </div>
+            <ul class="fns" style="margin-top:6px"><li class="fn" id="ot_main"><b>main</b>(): rclpy.spin(OdomToTf()) · only if use_odom_to_tf:=true</li></ul>
+          </div>
+          <div class="cls nav" id="c_amcl">
+            <header><h4>amcl</h4><span class="tag">nav2_bringup</span></header>
+            <ul class="fns">
+              <li class="fn cfg" id="am_map">map ← /map</li>
+              <li class="fn cfg" id="am_in">scan_topic scan, likelihood_field, 60 beams</li>
+              <li class="fn cfg" id="am_model">DifferentialMotionModel ← tf odom → base_link, 500–2000 particles</li>
+              <li class="fn cfg" id="am_init">set_initial_pose (0, 0, 0) or RViz /initialpose<span class="tune">tune</span></li>
+              <li class="fn cfg" id="am_out">publishes tf map → odom, /amcl_pose</li>
+            </ul>
+          </div>
+        </div>
+      </section>
 
-      <!-- Column 2: bridges and sensing -->
-      <article class="card dog" id="lidar_bridge" style="grid-column:2;grid-row:3">
-        <header><h3><a href="../../examples/lidar_bridge.py">lidar_bridge.py</a></h3><span class="tag">by hand</span></header>
-        <p class="what">Robot network → ROS</p>
-        <ul class="sig">
-          <li><b>main</b>(): rclpy.init(args=sys.argv); Node("go2_lidar_bridge")</li>
-          <li>create_publisher(PointCloud2, "/utlidar/cloud", SENSOR_DATA)</li>
-          <li>ChannelFactoryInitialize(0, "ethrobot")</li>
-          <li>ChannelSubscriber("rt/utlidar/cloud_base", PointCloud2_).Init(on_cloud, 10)</li>
-          <li><b>on_cloud</b>(msg) → <b>to_ros_cloud</b>(msg, PointCloud2, PointField, clock) → pub.publish(out)</li>
-        </ul>
-      </article>
+      <!-- ===================== 5. Choosing a goal ===================== -->
+      <section class="uc" id="uc_goal" style="grid-column:3;grid-row:1">
+        <h3><span class="num">5</span>Choosing a goal</h3>
+        <p class="q">Where should I go?</p>
+        <p class="why">Nothing moves until a goal is sent. Rooms can be looked up from the BIM instead of guessed.</p>
+        <div class="cols">
+          <div class="stack">
+            <div class="cls ws" id="c_ls">
+              <header><h4><a href="../../src/go2_bim_nav/go2_bim_nav/list_spaces.py">list_spaces.py</a></h4><span class="tag">module · workstation</span></header>
+              <ul class="fns"><li class="fn" id="ls_main"><b>main</b>(--input model.ifc): for IfcSpace: create_shape(settings, space) → centroid (cx, cy); prints name, x, y</li></ul>
+            </div>
+            <div class="cls file" id="c_wp">
+              <header><h4><a href="../../src/go2_bim_nav/config/waypoints.yaml">waypoints.yaml</a></h4><span class="tag">file</span></header>
+              <ul class="fns"><li class="fn cfg" id="wp">name: {x, y, yaw} · examples: kitchen, entrance</li></ul>
+            </div>
+          </div>
+          <div class="stack">
+            <div class="cls dog" id="c_sg">
+              <header><h4><a href="../../src/go2_bim_nav/go2_bim_nav/send_goal.py">send_goal.py</a></h4><span class="tag">module · by hand</span></header>
+              <ul class="fns">
+                <li class="fn" id="sg_main"><b>main</b>(--x, --y, --yaw 0.0, --frame-id map, --waypoint, --waypoints-file) → exit 0 / 1</li>
+                <li class="fn" id="sg_load"><b>load_waypoint</b>(waypoints_file, name) → (x, y, yaw)</li>
+                <li class="fn" id="sg_quat"><b>yaw_to_quaternion</b>(yaw) → (0, 0, sin(yaw/2), cos(yaw/2))</li>
+              </ul>
+              <div class="cls dog" id="c_gs">
+                <header><h4>class GoalSender(Node)</h4></header>
+                <ul class="fns">
+                  <li class="fn" id="sg_init"><b>__init__</b>(): ActionClient(self, NavigateToPose, 'navigate_to_pose')</li>
+                  <li class="fn" id="sg_send"><b>send</b>(x, y, yaw, frame_id='map') → bool</li>
+                  <li class="fn" id="sg_fb"><b>_feedback_cb</b>(feedback_msg): logs distance_remaining every 10th message</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
-      <article class="card dog" id="p2l" style="grid-column:2;grid-row:4">
-        <header><h3>pointcloud_to_laserscan</h3><span class="tag">launched</span></header>
-        <p class="what">3D cloud → flat 2D scan</p>
-        <ul class="sig">
-          <li>remap cloud_in ← lidar_cloud_topic, scan → /scan</li>
-          <li>target_frame base_link</li>
-          <li>min_height 0.05, max_height 0.35 m</li>
-          <li>angle −π…π, step 0.0087; range 0.15–12.0 m</li>
-        </ul>
-      </article>
+      <!-- ===================== 6. Navigation ===================== -->
+      <section class="uc" id="uc_nav" style="grid-column:3;grid-row:2">
+        <h3><span class="num">6</span>Navigation</h3>
+        <p class="q">How do I get there without hitting anything?</p>
+        <p class="why">The planner trusts the BIM for the route; the controller dodges whatever the LiDAR sees right now.</p>
+        <div class="cols">
+          <div class="stack">
+            <div class="cls nav" id="c_bt">
+              <header><h4>bt_navigator</h4><span class="tag">nav2_bringup</span></header>
+              <ul class="fns">
+                <li class="fn cfg" id="bt_srv">action server navigate_to_pose (global_frame map)</li>
+                <li class="fn cfg" id="bt_tree">Humble default tree: plan → smooth → follow, recover on failure</li>
+              </ul>
+            </div>
+            <div class="cls nav" id="c_pl">
+              <header><h4>planner_server</h4><span class="tag">nav2_bringup</span></header>
+              <ul class="fns"><li class="fn cfg" id="pl_grid">GridBased = NavfnPlanner: A*, tolerance 0.5, allow_unknown false</li></ul>
+            </div>
+            <div class="cls nav" id="c_sm">
+              <header><h4>smoother_server</h4><span class="tag">nav2_bringup</span></header>
+              <ul class="fns"><li class="fn cfg" id="sm">simple_smoother = SimpleSmoother, max_its 1000</li></ul>
+            </div>
+          </div>
+          <div class="stack">
+            <div class="cls nav" id="c_ct">
+              <header><h4>controller_server</h4><span class="tag">nav2_bringup</span></header>
+              <ul class="fns">
+                <li class="fn cfg" id="ct_follow">FollowPath = DWBLocalPlanner, 20 Hz, max_vel_x 0.8, max_vel_theta 1.0<span class="tune">tune</span></li>
+                <li class="fn cfg" id="ct_goal">goal_checker: xy 0.20 m, yaw 0.15 rad</li>
+                <li class="fn cfg" id="ct_prog">progress_checker: 0.5 m within 10 s</li>
+              </ul>
+            </div>
+            <div class="cls nav" id="c_bh">
+              <header><h4>behavior_server</h4><span class="tag">nav2_bringup</span></header>
+              <ul class="fns"><li class="fn cfg" id="bh">spin, backup, wait (max_rotational_vel 1.0)</li></ul>
+            </div>
+            <div class="cls nav" id="c_vs">
+              <header><h4>velocity_smoother</h4><span class="tag">nav2_bringup</span></header>
+              <ul class="fns"><li class="fn cfg" id="vs">20 Hz, max [0.8, 0, 1.0], min [−0.4, 0, −1.0], accel [1.0, 0, 2.0] → /cmd_vel<span class="tune">tune</span></li></ul>
+            </div>
+          </div>
+        </div>
+      </section>
 
-      <article class="card dog" id="odom_to_tf" style="grid-column:2;grid-row:6">
-        <header><h3><a href="../../src/go2_bim_nav/go2_bim_nav/odom_to_tf.py">odom_to_tf.py</a></h3><span class="tag">launched</span></header>
-        <p class="what">Odometry topic → tf</p>
-        <ul class="sig">
-          <li>class <b>OdomToTf</b>(Node)</li>
-          <li class="sub"><b>__init__</b>(): TransformBroadcaster(self); create_subscription(Odometry, '/utlidar/robot_odom', _on_odom, qos_profile_sensor_data)</li>
-          <li class="sub"><b>_on_odom</b>(msg) → TransformStamped(stamp=now(), odom → base_link, msg.pose) → sendTransform(t)</li>
-          <li>only if use_odom_to_tf:=true</li>
-        </ul>
-      </article>
+      <!-- ===================== 7. Driving ===================== -->
+      <section class="uc" id="uc_drive" style="grid-column:4;grid-row:2">
+        <h3><span class="num">7</span>Driving the robot</h3>
+        <p class="q">How do Nav2's commands make the legs move?</p>
+        <p class="why">Nav2 speaks Twist on /cmd_vel; the Go2 only takes Sport API requests, so the bridge translates and stops the dog if commands go quiet.</p>
+        <div class="stack">
+          <div class="cls dog" id="c_cb">
+            <header><h4><a href="../../src/go2_bim_nav/go2_bim_nav/cmd_vel_bridge.py">cmd_vel_bridge.py</a></h4><span class="tag">launched</span></header>
+            <div class="cls dog" id="c_cb_cls">
+              <header><h4>class CmdVelBridge(Node)</h4></header>
+              <ul class="fns">
+                <li class="fn" id="cb_init"><b>__init__</b>(): create_publisher(Request, '/api/sport/request', 10); create_subscription(Twist, '/cmd_vel', _on_cmd_vel, 10); create_timer(0.1, _check_watchdog)</li>
+                <li class="fn" id="cb_on"><b>_on_cmd_vel</b>(msg: Twist)</li>
+                <li class="fn" id="cb_move"><b>_publish_move</b>(vx, vy, vyaw)</li>
+                <li class="fn" id="cb_wd"><b>_check_watchdog</b>() every 0.1 s</li>
+                <li class="fn" id="cb_stop"><b>_publish_stop</b>()</li>
+              </ul>
+            </div>
+            <ul class="fns" style="margin-top:6px"><li class="fn" id="cb_main"><b>main</b>(): rclpy.spin(CmdVelBridge()); finally _publish_stop()</li></ul>
+          </div>
+          <div class="cls fw gap" id="c_sport">
+            <header><h4>Go2 sport service</h4><span class="tag">robot</span></header>
+            <ul class="fns">
+              <li class="fn cfg" id="sp_move">Move (api_id 1008): walk at x, y, yaw speed</li>
+              <li class="fn cfg" id="sp_stop">StopMove (api_id 1003)</li>
+              <li class="fn cfg" id="sp_walk">legs move → LiDAR and odometry change</li>
+            </ul>
+            <p class="warnline">⚠ The bridge publishes on ROS domain 1; the robot usually listens on domain 0. Unverified.</p>
+            <p class="warnline">⚠ The firmware has its own obstacle avoidance (SWITCHAVOIDMODE, 2058). Nothing here turns it on or off; decide on purpose whether it runs alongside Nav2.</p>
+          </div>
+        </div>
+      </section>
 
-      <!-- Column 3: Nav2 perception -->
-      <article class="card nav" id="local_costmap" style="grid-column:3;grid-row:3">
-        <header><h3>local_costmap</h3><span class="tag">nav2_bringup</span></header>
-        <p class="what">What's right around the robot</p>
-        <ul class="sig">
-          <li>frame odom, rolling 6×6 m @ 0.05 m, 10 Hz</li>
-          <li>ObstacleLayer(/scan) → InflationLayer(radius 0.4, scale 3.0)</li>
-          <li>footprint 0.70 × 0.32 m (placeholder)</li>
-          <li>also read by behavior_server</li>
-        </ul>
-      </article>
-
-      <article class="card nav" id="amcl" style="grid-column:3;grid-row:4">
-        <header><h3>amcl</h3><span class="tag">nav2_bringup</span></header>
-        <p class="what">Where am I on the BIM map?</p>
-        <ul class="sig">
-          <li>likelihood_field, DifferentialMotionModel</li>
-          <li>500–2000 particles, 60 beams</li>
-          <li>set_initial_pose (0, 0, 0) or RViz /initialpose</li>
-          <li>→ publishes tf map → odom</li>
-        </ul>
-      </article>
-
-      <article class="card nav" id="map_server" style="grid-column:3;grid-row:5">
-        <header><h3>map_server</h3><span class="tag">nav2_bringup</span></header>
-        <p class="what">Serves the BIM map</p>
-        <ul class="sig">
-          <li>yaml_filename ← launch arg map</li>
-          <li>→ /map nav_msgs/OccupancyGrid</li>
-        </ul>
-      </article>
-
-      <article class="card nav" id="global_costmap" style="grid-column:3;grid-row:6">
-        <header><h3>global_costmap</h3><span class="tag">nav2_bringup</span></header>
-        <p class="what">Whole floor: BIM + live obstacles</p>
-        <ul class="sig">
-          <li>frame map, 1 Hz, track_unknown_space</li>
-          <li>StaticLayer(/map) → ObstacleLayer(/scan) → InflationLayer(radius 0.4)</li>
-        </ul>
-      </article>
-
-      <!-- Column 4: goal and route -->
-      <article class="card dog" id="send_goal" style="grid-column:4;grid-row:2">
-        <header><h3><a href="../../src/go2_bim_nav/go2_bim_nav/send_goal.py">send_goal.py</a></h3><span class="tag">by hand</span></header>
-        <p class="what">“Go here”</p>
-        <ul class="sig">
-          <li><b>main</b>(--x, --y, --yaw 0.0, --frame-id map, --waypoint, --waypoints-file)</li>
-          <li><b>load_waypoint</b>(waypoints_file, name) → (x, y, yaw)</li>
-          <li>class <b>GoalSender</b>(Node): ActionClient(self, NavigateToPose, 'navigate_to_pose')</li>
-          <li class="sub"><b>send</b>(x, y, yaw, frame_id): wait_for_server(10 s) → <b>yaw_to_quaternion</b>(yaw) → send_goal_async(goal, feedback_callback=_feedback_cb) → get_result_async()</li>
-          <li>exit 0 if STATUS_SUCCEEDED, else 1</li>
-        </ul>
-      </article>
-
-      <article class="card nav" id="bt" style="grid-column:4;grid-row:4">
-        <header><h3>bt_navigator</h3><span class="tag">nav2_bringup</span></header>
-        <p class="what">Runs the navigation behaviour tree</p>
-        <ul class="sig">
-          <li>action server navigate_to_pose</li>
-          <li>Humble default tree: plan → smooth → follow, recover on failure</li>
-          <li>global_frame map, robot_base_frame base_link</li>
-        </ul>
-      </article>
-
-      <article class="card nav" id="planner" style="grid-column:4;grid-row:5">
-        <header><h3>planner_server</h3><span class="tag">nav2_bringup</span></header>
-        <p class="what">Global route</p>
-        <ul class="sig">
-          <li>GridBased = NavfnPlanner</li>
-          <li>use_astar true, tolerance 0.5, allow_unknown false</li>
-          <li>ComputePathToPose → nav_msgs/Path</li>
-        </ul>
-      </article>
-
-      <article class="card nav" id="smoother" style="grid-column:4;grid-row:6">
-        <header><h3>smoother_server</h3><span class="tag">nav2_bringup</span></header>
-        <p class="what">Rounds off the route</p>
-        <ul class="sig">
-          <li>SimpleSmoother, max_its 1000</li>
-          <li>SmoothPath(Path) → Path</li>
-        </ul>
-      </article>
-
-      <!-- Column 5: follow and smooth -->
-      <article class="card nav" id="controller" style="grid-column:5;grid-row:3">
-        <header><h3>controller_server</h3><span class="tag">nav2_bringup</span></header>
-        <p class="what">Follows the route, dodges obstacles</p>
-        <ul class="sig">
-          <li>20 Hz; FollowPath = DWBLocalPlanner</li>
-          <li>max_vel_x 0.8, max_vel_theta 1.0, sim_time 1.5</li>
-          <li>critics: RotateToGoal, Oscillation, BaseObstacle, GoalAlign, PathAlign, PathDist, GoalDist</li>
-          <li>goal_checker xy 0.20 m, yaw 0.15 rad; progress 0.5 m / 10 s</li>
-        </ul>
-      </article>
-
-      <article class="card nav" id="vsmooth" style="grid-column:5;grid-row:4">
-        <header><h3>velocity_smoother</h3><span class="tag">nav2_bringup</span></header>
-        <p class="what">Limits speed and acceleration</p>
-        <ul class="sig">
-          <li>20 Hz, OPEN_LOOP</li>
-          <li>max_velocity [0.8, 0, 1.0], min [−0.4, 0, −1.0]</li>
-          <li>max_accel [1.0, 0, 2.0]</li>
-          <li>cmd_vel_nav → /cmd_vel</li>
-        </ul>
-      </article>
-
-      <article class="card nav" id="behavior" style="grid-column:5;grid-row:5">
-        <header><h3>behavior_server</h3><span class="tag">nav2_bringup</span></header>
-        <p class="what">Recoveries when stuck</p>
-        <ul class="sig">
-          <li>Spin, BackUp, Wait</li>
-          <li>reads local_costmap/costmap_raw</li>
-          <li>max_rotational_vel 1.0</li>
-        </ul>
-      </article>
-
-      <!-- Column 6: drive -->
-      <article class="card dog" id="cmd_vel_bridge" style="grid-column:6;grid-row:4">
-        <header><h3><a href="../../src/go2_bim_nav/go2_bim_nav/cmd_vel_bridge.py">cmd_vel_bridge.py</a></h3><span class="tag">launched</span></header>
-        <p class="what">Twist → Go2 Sport API</p>
-        <ul class="sig">
-          <li>class <b>CmdVelBridge</b>(Node)</li>
-          <li class="sub"><b>__init__</b>(): create_publisher(Request, '/api/sport/request', 10); create_subscription(Twist, '/cmd_vel', _on_cmd_vel, 10); create_timer(0.1, _check_watchdog)</li>
-          <li class="sub"><b>_on_cmd_vel</b>(msg) → <b>_publish_move</b>(linear.x, linear.y, angular.z)</li>
-          <li class="sub"><b>_publish_move</b>(vx, vy, vyaw) → Request(api_id 1008, parameter {"x","y","z"})</li>
-          <li class="sub"><b>_check_watchdog</b>(): no /cmd_vel for 0.5 s → <b>_publish_stop</b>() (api_id 1003)</li>
-          <li><b>main</b>() finally → _publish_stop()</li>
-        </ul>
-      </article>
-
-      <article class="card fw gap" id="sport" style="grid-column:6;grid-row:5">
-        <header><h3>Go2 sport service</h3><span class="tag">robot</span></header>
-        <p class="what">Executes motion requests</p>
-        <ul class="sig">
-          <li>Move (1008): walk at x, y, yaw speed</li>
-          <li>StopMove (1003): stop</li>
-        </ul>
-        <p class="warnline">⚠ The bridge publishes on ROS domain 1; the robot usually listens on domain 0. Unverified.</p>
-      </article>
-
-      <article class="card fw" id="walks" style="grid-column:6;grid-row:6">
-        <header><h3>Go2 walks</h3><span class="tag">robot</span></header>
-        <p class="what">Legs move; LiDAR and odometry change</p>
-      </article>
+      <svg id="edges" aria-hidden="true">
+        <defs>
+          <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker>
+          <marker id="ahc" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ahc"/></marker>
+          <marker id="ahw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ahw"/></marker>
+        </defs>
+        <g id="paths"></g>
+        <g id="badges"></g>
+      </svg>
     </div>
-    <svg id="edges" aria-hidden="true">
-      <defs>
-        <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-          <path d="M0,0 L10,5 L0,10 z" class="ah"/>
-        </marker>
-      </defs>
-      <g id="paths"></g>
-      <g id="badges"></g>
-    </svg>
   </div>
+  <div id="tip" role="tooltip"></div>
 
 <div class="narrow">
   <h2>What's passed along each arrow</h2>
   <div class="tablewrap">
     <table>
-      <thead><tr><th>#</th><th>From → to</th><th>What</th><th>Details</th></tr></thead>
+      <thead><tr><th>#</th><th>From → to</th><th>What</th><th>Kind</th><th>Details</th></tr></thead>
       <tbody id="rows"></tbody>
     </table>
+  </div>
+
+  <h2>Before trusting it</h2>
+  <div class="notes">
+    <div class="note">
+      <h3>Values to tune</h3>
+      <ul>
+        <li><strong>Footprint</strong> in both costmaps is a placeholder (0.70 × 0.32 m). Measure the real Go2.</li>
+        <li><strong>Speed limits</strong>: DWB <code>max_vel_x</code> / <code>acc_lim_x</code> and the velocity_smoother limits should match what the Go2 accepts.</li>
+        <li><strong>LiDAR slice</strong>: <code>min_height</code> / <code>max_height</code> in the launch file, set for the LiDAR's mounting height.</li>
+        <li><strong>Start pose</strong>: <code>initial_pose</code> in <code>nav2_params.yaml</code>, or set it from RViz on a laptop.</li>
+      </ul>
+    </div>
+    <div class="note">
+      <h3>Not verified yet</h3>
+      <ul>
+        <li>Parsing a real IFC file (only synthetic data was tested).</li>
+        <li>The Go2 link: topic names, odometry source, and which DDS domain the sport service listens on.</li>
+        <li>AMCL localizing on a BIM-made map instead of a SLAM map.</li>
+        <li>The Nav2 build from source on Ubuntu 20.04 with Humble.</li>
+        <li>Any of it on the real robot near real obstacles.</li>
+      </ul>
+      <p>From the package README: test in an open, empty area first, with an e-stop or the remote within reach.</p>
+    </div>
   </div>
 </div>
 </main>
 
 <script>
 (function () {
-  // side: r = right edge, l = left edge, t = top, b = bottom
-  var EDGES = [
-    { from: 'list_spaces', fs: 'r', to: 'send_goal', ts: 'l', what: 'waypoints.yaml', det: 'Copied by hand as {name: {x, y, yaw}}. send_goal reads it with load_waypoint(waypoints_file, name) → (x, y, yaw).' },
-    { from: 'go2_lidar', fs: 'r', to: 'lidar_bridge', ts: 'l', what: 'rt/utlidar/cloud_base', det: 'PointCloud2_ over CycloneDDS domain 0 on ethrobot. Delivered to on_cloud(msg) from a 10-deep reader queue.' },
-    { from: 'lidar_bridge', fs: 'b', to: 'p2l', ts: 't', what: '/utlidar/cloud', det: 'sensor_msgs/PointCloud2, every field copied, restamped with the Jetson clock, SENSOR_DATA QoS. Arrives as cloud_in via the lidar_cloud_topic launch arg.' },
-    { from: 'ifc_to_map', fs: 'r', to: 'map_server', ts: 'l', what: 'bim_map.pgm + bim_map.yaml', det: 'scp to the dog, passed as map:=…/bim_map.yaml. YAML holds image, resolution, origin [min_x, min_y, 0], occupied_thresh 0.65, free_thresh 0.25.' },
-    { from: 'go2_odom', fs: 'r', to: 'odom_to_tf', ts: 'l', what: '/utlidar/robot_odom', det: 'nav_msgs/Odometry, frame_id odom, child_frame_id base_link. ⚠ No code in the repo publishes this on ROS domain 1.', gap: true },
-    { from: 'p2l', fs: 'r', to: 'local_costmap', ts: 'l', what: '/scan', det: 'sensor_msgs/LaserScan. ObstacleLayer marks and clears cells, obstacle_range 6.0 m, raytrace_range 6.5 m.' },
-    { from: 'p2l', fs: 'r', to: 'amcl', ts: 'l', what: '/scan', det: 'sensor_msgs/LaserScan, scan_topic: scan. Up to 60 beams are matched against the BIM map.' },
-    { from: 'p2l', fs: 'r', to: 'global_costmap', ts: 'l', what: '/scan', det: 'sensor_msgs/LaserScan. ObstacleLayer adds live obstacles on top of the static BIM layer.' },
-    { from: 'odom_to_tf', fs: 'r', to: 'amcl', ts: 'l', what: 'tf odom → base_link', det: 'TransformStamped stamped with now(), translation and rotation copied from msg.pose.pose.' },
-    { from: 'map_server', fs: 't', to: 'amcl', ts: 'b', what: '/map', det: 'nav_msgs/OccupancyGrid, transient-local so late subscribers still get it.' },
-    { from: 'map_server', fs: 'b', to: 'global_costmap', ts: 't', what: '/map', det: 'nav_msgs/OccupancyGrid into StaticLayer (map_subscribe_transient_local: true).' },
-    { from: 'amcl', fs: 'r', to: 'bt', ts: 'l', what: 'tf map → odom', det: 'Robot pose in the BIM frame, also /amcl_pose. Costmaps and controllers use the same tf tree.' },
-    { from: 'global_costmap', fs: 'r', to: 'planner', ts: 'l', what: 'global costmap', det: 'NavFn A* searches it; allow_unknown false keeps routes inside the BIM.' },
-    { from: 'local_costmap', fs: 'r', to: 'controller', ts: 'l', what: 'local costmap', det: 'DWB scores candidate trajectories against it (BaseObstacle critic).' },
-    { from: 'send_goal', fs: 'b', to: 'bt', ts: 't', what: 'NavigateToPose', det: 'Action navigate_to_pose. Goal: PoseStamped(frame map, x, y, orientation (0, 0, sin(yaw/2), cos(yaw/2))). Feedback: distance_remaining. Result: status.', bi: true },
-    { from: 'bt', fs: 'b', to: 'planner', ts: 't', what: 'ComputePathToPose', det: 'Goal pose plus current pose from tf → nav_msgs/Path.' },
-    { from: 'planner', fs: 'b', to: 'smoother', ts: 't', what: 'nav_msgs/Path', det: 'Raw A* path into SmoothPath.' },
-    { from: 'smoother', fs: 'r', to: 'controller', ts: 'l', what: 'smoothed Path', det: 'The path the controller follows.' },
-    { from: 'bt', fs: 'r', to: 'controller', ts: 'l', what: 'FollowPath', det: 'Action with the path and controller_id FollowPath. Runs until goal_checker passes or progress_checker fails.' },
-    { from: 'bt', fs: 'r', to: 'behavior', ts: 'l', what: 'Spin / BackUp / Wait', det: 'Recovery actions the tree calls when planning or following fails.' },
-    { from: 'controller', fs: 'b', to: 'vsmooth', ts: 't', what: 'cmd_vel_nav', det: 'geometry_msgs/Twist at 20 Hz: linear.x ≤ 0.8, angular.z ≤ 1.0.' },
-    { from: 'behavior', fs: 't', to: 'vsmooth', ts: 'b', what: 'cmd_vel_nav', det: 'geometry_msgs/Twist while a recovery is running.' },
-    { from: 'vsmooth', fs: 'r', to: 'cmd_vel_bridge', ts: 'l', what: '/cmd_vel', det: 'geometry_msgs/Twist, speed- and acceleration-limited. Arrives in _on_cmd_vel(msg).' },
-    { from: 'cmd_vel_bridge', fs: 'b', to: 'sport', ts: 't', what: '/api/sport/request', det: 'unitree_api/msg/Request: header.identity.api_id 1008 with parameter \'{"x": vx, "y": vy, "z": vyaw}\', or 1003 to stop. ⚠ Sent on ROS domain 1; the robot usually listens on domain 0.', gap: true },
-    { from: 'sport', fs: 'b', to: 'walks', ts: 't', what: 'motion', det: 'The legs carry out the move.' },
-    { from: 'walks', fs: 'b', to: 'go2_lidar', ts: 'l', what: 'new surroundings', det: 'Moving changes what the LiDAR sees, so the loop runs again.', loop: true },
-    { from: 'walks', fs: 'b', to: 'go2_odom', ts: 'l', what: 'new position', det: 'Moving updates odometry, so the loop runs again.', loop: true }
+  // kind: topic (ROS topic, action, tf) | call (direct call / return) | file | state | gap | loop
+  var GROUPS = [
+    { name: '1 · Mapping', edges: [
+      { f: 'itm_main', t: 'itm_tri', k: 'call', what: 'model, include_types, storey', det: 'model = ifcopenshell.open(--input); include_types from --include-types; storey from --storey.' },
+      { f: 'itm_settings', t: 'itm_tri', k: 'call', what: 'settings', det: 'Geometry settings with world coordinates on, so every element lands in one shared frame.' },
+      { f: 'itm_storey', t: 'itm_tri', k: 'call', what: 'storey name', det: 'Elements on other storeys are skipped (also used by door_bounding_boxes).' },
+      { f: 'itm_main', t: 'itm_doors', k: 'call', what: 'model, storey, door_padding', det: 'Skipped when --no-clear-doors is set.' },
+      { f: 'itm_settings', t: 'itm_doors', k: 'call', what: 'settings', det: 'Same world-coordinate settings.' },
+      { f: 'itm_tri', t: 'itm_raster', k: 'call', what: 'triangles [(x, y)×3]', det: 'Each element mesh projected to the floor plane; main passes the generator into rasterise.' },
+      { f: 'itm_doors', t: 'itm_raster', k: 'call', what: 'clear_boxes', det: 'Padded door footprints (min_x, min_y, max_x, max_y), painted FREE after the walls.' },
+      { f: 'itm_raster', t: 'itm_write', k: 'call', what: 'img, origin', det: 'PIL greyscale image (0 = wall, 254 = free) and origin (min_x, min_y) in metres.' },
+      { f: 'itm_write', t: 'map_files', k: 'file', what: 'bim_map.pgm + .yaml', det: 'Written next to --output.' },
+      { f: 'map_files', t: 'pm_main', k: 'file', what: '--map bim_map.yaml', det: 'Eyeball check before copying to the dog.' },
+      { f: 'map_files', t: 'ms_in', k: 'file', what: 'map:=…/bim_map.yaml', det: 'scp to the dog, passed as the launch argument map.' },
+      { f: 'ms_out', t: 'gc_static', k: 'topic', what: '/map', det: 'nav_msgs/OccupancyGrid, transient local.' },
+      { f: 'ms_out', t: 'am_map', k: 'topic', what: '/map', det: 'nav_msgs/OccupancyGrid that AMCL matches scans against.' }
+    ]},
+    { name: '2 · Sensing', edges: [
+      { f: 'r_lidar', t: 'lb_on', k: 'topic', what: 'rt/utlidar/cloud_base', det: 'PointCloud2_ over CycloneDDS domain 0 on ethrobot, delivered from a 10-deep reader queue.' },
+      { f: 'lb_on', t: 'lb_conv', k: 'call', what: 'msg, PointCloud2, PointField, clock', det: 'The raw Unitree message plus the ROS types and the node clock.' },
+      { f: 'lb_conv', t: 'lb_on', k: 'call', what: 'out: PointCloud2', det: 'Every field copied; header.stamp replaced with the Jetson clock because the robot clock is off.' },
+      { f: 'lb_on', t: 'p2l_in', k: 'topic', what: '/utlidar/cloud', det: 'sensor_msgs/PointCloud2, SENSOR_DATA QoS (best effort).' },
+      { f: 'p2l_out', t: 'gc_obs', k: 'topic', what: '/scan', det: 'sensor_msgs/LaserScan; marks and clears cells, obstacle_range 6.0 m.' },
+      { f: 'p2l_out', t: 'lc_obs', k: 'topic', what: '/scan', det: 'sensor_msgs/LaserScan; same settings in the rolling local window.' },
+      { f: 'p2l_out', t: 'am_in', k: 'topic', what: '/scan', det: 'sensor_msgs/LaserScan; up to 60 beams matched against the BIM map.' },
+      { f: 'r_odom', t: 'ot_on', k: 'gap', what: '/utlidar/robot_odom', det: 'nav_msgs/Odometry, frame odom → child base_link. ⚠ Nothing in the repo publishes this on ROS domain 1.' },
+      { f: 'r_odom', t: 'uc_nav', k: 'gap', what: 'odom_topic', det: 'bt_navigator, controller_server and velocity_smoother read /utlidar/robot_odom directly. ⚠ Same missing source.' }
+    ]},
+    { name: '3 · Obstacle sensing', edges: [
+      { f: 'gc_inf', t: 'pl_grid', k: 'topic', what: 'global costmap', det: 'NavFn A* searches it; allow_unknown false keeps routes inside the BIM.' },
+      { f: 'lc_inf', t: 'ct_follow', k: 'topic', what: 'local costmap', det: 'DWB scores candidate trajectories against it (BaseObstacle critic).' },
+      { f: 'lc_inf', t: 'bh', k: 'topic', what: 'local_costmap/costmap_raw', det: 'Checked before a spin or back-up so recoveries don\'t hit anything.' }
+    ]},
+    { name: '4 · Localization', edges: [
+      { f: 'ot_on', t: 'am_model', k: 'topic', what: 'tf odom → base_link', det: 'TransformStamped stamped with now(); translation and rotation copied from msg.pose.pose.' },
+      { f: 'am_out', t: 'bt_srv', k: 'topic', what: 'tf map → odom', det: 'Robot pose in the BIM frame. Costmaps and the controller use the same tf tree.' }
+    ]},
+    { name: '5 · Choosing a goal', edges: [
+      { f: 'itm_settings', t: 'ls_main', k: 'call', what: 'settings', det: 'list_spaces imports make_geom_settings from ifc_to_map.' },
+      { f: 'ls_main', t: 'wp', k: 'file', what: 'name, x, y', det: 'Printed, then copied into waypoints.yaml by hand.' },
+      { f: 'wp', t: 'sg_load', k: 'file', what: '--waypoints-file, --waypoint', det: 'yaml.safe_load(file)[name].' },
+      { f: 'sg_load', t: 'sg_main', k: 'call', what: '(x, y, yaw)', det: 'yaw defaults to 0.0 if missing. Unknown names exit 1.' },
+      { f: 'sg_main', t: 'sg_send', k: 'call', what: 'x, y, yaw, frame_id', det: 'From --x/--y/--yaw or the waypoint. send returns True/False → sys.exit(0/1).' },
+      { f: 'sg_send', t: 'sg_quat', k: 'call', what: 'yaw ⇄ (0, 0, qz, qw)', det: 'Heading in radians turned into a quaternion for the goal pose.', bi: true },
+      { f: 'sg_send', t: 'bt_srv', k: 'topic', what: 'NavigateToPose goal', det: 'PoseStamped(frame map, x, y, orientation). Waits up to 10 s for the action server first.' },
+      { f: 'bt_srv', t: 'sg_fb', k: 'topic', what: 'feedback', det: 'distance_remaining, logged every 10th message.' },
+      { f: 'bt_srv', t: 'sg_send', k: 'topic', what: 'result status', det: 'STATUS_SUCCEEDED → True; anything else → False.' }
+    ]},
+    { name: '6 · Navigation', edges: [
+      { f: 'bt_tree', t: 'pl_grid', k: 'topic', what: 'ComputePathToPose', det: 'Goal pose plus current pose from tf.' },
+      { f: 'pl_grid', t: 'sm', k: 'topic', what: 'nav_msgs/Path', det: 'Raw A* path into SmoothPath.' },
+      { f: 'sm', t: 'ct_follow', k: 'topic', what: 'smoothed Path', det: 'The path the controller follows.' },
+      { f: 'bt_tree', t: 'ct_follow', k: 'topic', what: 'FollowPath', det: 'Runs until goal_checker passes or progress_checker fails.' },
+      { f: 'bt_tree', t: 'bh', k: 'topic', what: 'Spin / BackUp / Wait', det: 'Recoveries when planning or following fails.' },
+      { f: 'ct_follow', t: 'vs', k: 'topic', what: 'cmd_vel_nav', det: 'geometry_msgs/Twist at 20 Hz.' },
+      { f: 'bh', t: 'vs', k: 'topic', what: 'cmd_vel_nav', det: 'geometry_msgs/Twist while a recovery runs.' },
+      { f: 'vs', t: 'cb_on', k: 'topic', what: '/cmd_vel', det: 'geometry_msgs/Twist, speed- and acceleration-limited.' }
+    ]},
+    { name: '7 · Driving the robot', edges: [
+      { f: 'cb_on', t: 'cb_move', k: 'call', what: 'linear.x, linear.y, angular.z', det: 'Passed straight through as vx, vy, vyaw.' },
+      { f: 'cb_on', t: 'cb_wd', k: 'state', what: '_last_msg_time, _stopped', det: 'Every message refreshes the timestamp; an all-zero Twist marks the robot as stopped.' },
+      { f: 'cb_wd', t: 'cb_stop', k: 'call', what: 'no /cmd_vel for > 0.5 s', det: 'Sent once, then _stopped stays true until motion resumes.' },
+      { f: 'cb_main', t: 'cb_stop', k: 'call', what: 'on shutdown', det: 'finally block, so Ctrl+C never leaves the dog walking.' },
+      { f: 'cb_move', t: 'sp_move', k: 'gap', what: '/api/sport/request', det: 'unitree_api/msg/Request: api_id 1008, parameter \'{"x": vx, "y": vy, "z": vyaw}\'. ⚠ Sent on ROS domain 1.' },
+      { f: 'cb_stop', t: 'sp_stop', k: 'gap', what: '/api/sport/request', det: 'unitree_api/msg/Request: api_id 1003. ⚠ Sent on ROS domain 1.' },
+      { f: 'sp_walk', t: 'r_lidar', k: 'loop', what: 'new surroundings', det: 'Moving changes what the LiDAR sees, so the loop runs again.' },
+      { f: 'sp_walk', t: 'r_odom', k: 'loop', what: 'new position', det: 'Moving updates odometry, so the loop runs again.' }
+    ]}
   ];
-  EDGES.forEach(function (e, i) { e.n = i + 1; });
+  var KIND = { topic: 'topic / action / tf', call: 'call', file: 'file', state: 'state', gap: '⚠ topic', loop: 'loop' };
+
+  var EDGES = [], n = 0;
+  GROUPS.forEach(function (g) { g.edges.forEach(function (e) { e.n = ++n; e.group = g.name; EDGES.push(e); }); });
 
   var NS = 'http://www.w3.org/2000/svg';
   var wrap = document.getElementById('wrap');
@@ -479,161 +596,173 @@
   var svg = document.getElementById('edges');
   var gPaths = document.getElementById('paths');
   var gBadges = document.getElementById('badges');
+  var tip = document.getElementById('tip');
   var fitBtn = document.getElementById('fit');
+  var scale = 1;
 
-  function title(id) { var h = document.querySelector('#' + id + ' h3'); return h ? h.textContent : id; }
-  function box(id) {
-    var el = document.getElementById(id);
-    return { x: el.offsetLeft, y: el.offsetTop, w: el.offsetWidth, h: el.offsetHeight };
+  function $(id) { return document.getElementById(id); }
+  function label(id) {
+    var el = $(id);
+    if (el.classList.contains('uc')) return el.querySelector('h3').textContent.replace(/^\d/, '').trim();
+    var b = el.querySelector('b');
+    var owner = el.closest('.cls').querySelector('h4').textContent.replace(/^class /, '');
+    return b ? owner.replace(/\(.*\)/, '') + '.' + b.textContent : owner;
   }
-  function portPoint(b, side, f) {
-    if (side === 'r') return { x: b.x + b.w, y: b.y + b.h * f };
-    if (side === 'l') return { x: b.x, y: b.y + b.h * f };
-    if (side === 't') return { x: b.x + b.w * f, y: b.y };
-    return { x: b.x + b.w * f, y: b.y + b.h };
+  function rel(el) {
+    var a = el.getBoundingClientRect(), c = canvas.getBoundingClientRect();
+    return { x: (a.left - c.left) / scale, y: (a.top - c.top) / scale, w: a.width / scale, h: a.height / scale };
+  }
+  function anchor(id) {
+    var el = $(id), isUc = el.classList.contains('uc');
+    var box = isUc ? el : el.closest('.cls');
+    var r = rel(el), b = rel(box);
+    return { x1: b.x, x2: b.x + b.w, y: isUc ? r.y + 50 : r.y + r.h / 2, box: box };
   }
 
   function draw() {
     gPaths.textContent = '';
     gBadges.textContent = '';
     var W = canvas.offsetWidth, H = canvas.offsetHeight;
-    svg.setAttribute('width', W);
-    svg.setAttribute('height', H);
+    svg.setAttribute('width', W); svg.setAttribute('height', H);
     svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
 
-    var boxes = {};
-    EDGES.forEach(function (e) { boxes[e.from] = boxes[e.from] || box(e.from); boxes[e.to] = boxes[e.to] || box(e.to); });
+    // Several edges on one row: spread their attachment points a little.
+    var count = {}, seen = {};
+    EDGES.forEach(function (e) { count[e.f] = (count[e.f] || 0) + 1; count[e.t] = (count[e.t] || 0) + 1; });
+    function off(id) { seen[id] = (seen[id] || 0) + 1; return (seen[id] - 1 - (count[id] - 1) / 2) * 4; }
 
-    // Spread several edges that share one side of a card along that side.
-    var groups = {};
-    EDGES.forEach(function (e) {
-      [['from', 'fs', 'to'], ['to', 'ts', 'from']].forEach(function (k) {
-        var key = e[k[0]] + ':' + e[k[1]];
-        (groups[key] = groups[key] || []).push({ e: e, end: k[0], other: e[k[2]], side: e[k[1]] });
-      });
-    });
-    Object.keys(groups).forEach(function (key) {
-      var list = groups[key];
-      list.sort(function (a, b) {
-        var A = boxes[a.other], B = boxes[b.other];
-        var vert = a.side === 'l' || a.side === 'r';
-        return vert ? (A.y + A.h / 2) - (B.y + B.h / 2) : (A.x + A.w / 2) - (B.x + B.w / 2);
-      });
-      list.forEach(function (item, i) {
-        var f = list.length === 1 ? 0.5 : 0.25 + 0.5 * i / (list.length - 1);
-        if (item.side === 't' || item.side === 'b') f = list.length === 1 ? 0.5 : 0.35 + 0.3 * i / (list.length - 1);
-        item.e[item.end === 'from' ? 'fp' : 'tp'] = f;
-      });
-    });
-
-    var maxBottom = 0;
-    Object.keys(boxes).forEach(function (k) { maxBottom = Math.max(maxBottom, boxes[k].y + boxes[k].h); });
     var placed = [];
-
     EDGES.forEach(function (e) {
-      var p1 = portPoint(boxes[e.from], e.fs, e.fp);
-      var p2 = portPoint(boxes[e.to], e.ts, e.tp);
-      var d;
-      if (e.loop) {
-        var by = maxBottom + 34, lx = 14;
-        d = 'M' + p1.x + ',' + p1.y + ' V' + by + ' H' + lx + ' V' + p2.y + ' H' + p2.x;
-      } else if (e.fs === 'r' && e.ts === 'l') {
-        var dx = Math.max(24, (p2.x - p1.x) * 0.5);
-        d = 'M' + p1.x + ',' + p1.y + ' C' + (p1.x + dx) + ',' + p1.y + ' ' + (p2.x - dx) + ',' + p2.y + ' ' + p2.x + ',' + p2.y;
-      } else if (e.fs === 'b' && e.ts === 't') {
-        var dy = Math.max(12, (p2.y - p1.y) * 0.5);
-        d = 'M' + p1.x + ',' + p1.y + ' C' + p1.x + ',' + (p1.y + dy) + ' ' + p2.x + ',' + (p2.y - dy) + ' ' + p2.x + ',' + p2.y;
+      var A = anchor(e.f), B = anchor(e.t);
+      var ay = A.y + off(e.f), by = B.y + off(e.t), d;
+      if (e.k === 'loop') {
+        var bottom = H - 40, left = 16;
+        d = 'M' + A.x2 + ',' + ay + ' H' + (A.x2 + 24) + ' V' + bottom + ' H' + left + ' V' + by + ' H' + B.x1;
+      } else if (A.box === B.box) {
+        var bl = 14 + Math.min(36, Math.abs(by - ay) * 0.14);
+        d = 'M' + A.x1 + ',' + ay + ' C' + (A.x1 - bl) + ',' + ay + ' ' + (A.x1 - bl) + ',' + by + ' ' + A.x1 + ',' + by;
+      } else if (B.x1 >= A.x2 - 2) {
+        var dx = Math.max(30, (B.x1 - A.x2) / 2);
+        d = 'M' + A.x2 + ',' + ay + ' C' + (A.x2 + dx) + ',' + ay + ' ' + (B.x1 - dx) + ',' + by + ' ' + B.x1 + ',' + by;
+      } else if (B.x2 <= A.x1 + 2) {
+        var dx2 = Math.max(30, (A.x1 - B.x2) / 2);
+        d = 'M' + A.x1 + ',' + ay + ' C' + (A.x1 - dx2) + ',' + ay + ' ' + (B.x2 + dx2) + ',' + by + ' ' + B.x2 + ',' + by;
       } else {
-        var dy2 = Math.max(12, (p1.y - p2.y) * 0.5);
-        d = 'M' + p1.x + ',' + p1.y + ' C' + p1.x + ',' + (p1.y - dy2) + ' ' + p2.x + ',' + (p2.y + dy2) + ' ' + p2.x + ',' + p2.y;
+        var x = Math.max(A.x2, B.x2), br = 18 + Math.min(40, Math.abs(by - ay) * 0.1);
+        d = 'M' + A.x2 + ',' + ay + ' C' + (x + br) + ',' + ay + ' ' + (x + br) + ',' + by + ' ' + B.x2 + ',' + by;
       }
       var path = document.createElementNS(NS, 'path');
       path.setAttribute('d', d);
-      path.setAttribute('class', 'e' + (e.bi ? ' bi' : '') + (e.loop ? ' loop' : '') + (e.gap ? ' gapline' : ''));
+      path.setAttribute('class', 'e ' + e.k + (e.bi ? ' bi' : ''));
       gPaths.appendChild(path);
       e.path = path;
 
-      // Badge: try the middle first, then nudge along the line to avoid other badges.
       var L = path.getTotalLength(), pt = null;
-      var tries = e.loop ? [0.45, 0.3, 0.6] : [0.5, 0.4, 0.6, 0.3, 0.7, 0.25, 0.75];
-      for (var i = 0; i < tries.length; i++) {
+      var tries = e.k === 'loop' ? [0.5, 0.4, 0.6] : [0.5, 0.42, 0.58, 0.34, 0.66, 0.26, 0.74];
+      for (var i = 0; i < tries.length && !pt; i++) {
         var c = path.getPointAtLength(L * tries[i]);
-        var clear = placed.every(function (q) { return Math.hypot(q.x - c.x, q.y - c.y) > 21; });
-        if (clear) { pt = c; break; }
+        if (placed.every(function (q) { return Math.hypot(q.x - c.x, q.y - c.y) > 19; })) pt = c;
       }
       if (!pt) pt = path.getPointAtLength(L * 0.5);
       placed.push(pt);
 
       var g = document.createElementNS(NS, 'g');
-      g.setAttribute('class', 'badge' + (e.gap ? ' gapline' : ''));
+      g.setAttribute('class', 'badge ' + e.k);
       g.setAttribute('transform', 'translate(' + pt.x + ',' + pt.y + ')');
-      var t = document.createElementNS(NS, 'title');
-      t.textContent = e.n + '. ' + e.what + ': ' + e.det;
-      var circ = document.createElementNS(NS, 'circle');
-      circ.setAttribute('r', 9);
-      var tx = document.createElementNS(NS, 'text');
-      tx.textContent = e.n;
-      g.appendChild(t); g.appendChild(circ); g.appendChild(tx);
-      g.addEventListener('mouseenter', function () { focusEdges([e]); });
-      g.addEventListener('mouseleave', clearFocus);
+      var circ = document.createElementNS(NS, 'circle'); circ.setAttribute('r', 8.5);
+      var tx = document.createElementNS(NS, 'text'); tx.textContent = e.n;
+      g.appendChild(circ); g.appendChild(tx);
+      g.addEventListener('mouseenter', function (ev) { focus([e]); showTip(e, ev); });
+      g.addEventListener('mousemove', function (ev) { moveTip(ev); });
+      g.addEventListener('mouseleave', function () { clearFocus(); hideTip(); });
       gBadges.appendChild(g);
       e.badge = g;
     });
   }
 
-  // ---- Table ----
-  var tbody = document.getElementById('rows');
-  EDGES.forEach(function (e) {
-    var tr = document.createElement('tr');
-    if (e.gap) tr.className = 'gaprow';
-    function td(cls, text) { var c = document.createElement('td'); c.className = cls; c.textContent = text; tr.appendChild(c); }
-    td('n', e.n);
-    td('ft', title(e.from) + ' → ' + title(e.to));
-    td('what', e.what);
-    td('det', e.det);
-    tr.addEventListener('mouseenter', function () { focusEdges([e]); tr.classList.add('hl'); });
-    tr.addEventListener('mouseleave', function () { clearFocus(); tr.classList.remove('hl'); });
-    tbody.appendChild(tr);
-    e.row = tr;
-  });
+  // Tooltip
+  function showTip(e, ev) {
+    tip.innerHTML = '';
+    var b = document.createElement('b'); b.textContent = e.n + '. ' + e.what;
+    var ft = document.createElement('span'); ft.className = 'ft'; ft.textContent = label(e.f) + ' → ' + label(e.t);
+    var d = document.createElement('span'); d.textContent = e.det;
+    tip.appendChild(b); tip.appendChild(ft); tip.appendChild(d);
+    tip.style.display = 'block'; moveTip(ev);
+  }
+  function moveTip(ev) {
+    var x = ev.clientX + 14, y = ev.clientY + 14;
+    if (x + tip.offsetWidth > window.innerWidth - 8) x = ev.clientX - tip.offsetWidth - 14;
+    if (y + tip.offsetHeight > window.innerHeight - 8) y = ev.clientY - tip.offsetHeight - 14;
+    tip.style.left = x + 'px'; tip.style.top = y + 'px';
+  }
+  function hideTip() { tip.style.display = 'none'; }
 
-  // ---- Highlighting ----
-  function focusEdges(list) {
-    canvas.parentNode.classList.add('focus');
-    list.forEach(function (e) {
-      e.path.classList.add('hl'); e.badge.classList.add('hl');
-      document.getElementById(e.from).classList.add('hl');
-      document.getElementById(e.to).classList.add('hl');
-    });
+  // Highlighting
+  function markEnd(id) {
+    var el = $(id);
+    el.classList.add('hl');
+    var c = el.classList.contains('uc') ? null : el.closest('.cls');
+    while (c) { c.classList.add('hl-in'); c = c.parentElement.closest('.cls'); }
+  }
+  function focus(list) {
+    canvas.classList.add('focus');
+    list.forEach(function (e) { e.path.classList.add('hl'); e.badge.classList.add('hl'); markEnd(e.f); markEnd(e.t); });
   }
   function clearFocus() {
-    canvas.parentNode.classList.remove('focus');
-    document.querySelectorAll('.hl').forEach(function (el) { if (el.tagName !== 'TR') el.classList.remove('hl'); });
+    canvas.classList.remove('focus');
+    canvas.querySelectorAll('.hl, .hl-in').forEach(function (el) { el.classList.remove('hl'); el.classList.remove('hl-in'); });
   }
-  document.querySelectorAll('.card').forEach(function (card) {
-    card.addEventListener('mouseenter', function () {
-      focusEdges(EDGES.filter(function (e) { return e.from === card.id || e.to === card.id; }));
-      card.classList.add('hl');
+  function edgesTouching(ids) {
+    return EDGES.filter(function (e) { return ids.indexOf(e.f) >= 0 || ids.indexOf(e.t) >= 0; });
+  }
+  canvas.querySelectorAll('.fn').forEach(function (fn) {
+    fn.addEventListener('mouseenter', function () { var l = edgesTouching([fn.id]); if (l.length) { focus(l); markEnd(fn.id); } });
+    fn.addEventListener('mouseleave', clearFocus);
+  });
+  canvas.querySelectorAll('.cls > header, .uc > h3').forEach(function (h) {
+    var scope = h.parentElement;
+    h.addEventListener('mouseenter', function () {
+      var ids = Array.prototype.map.call(scope.querySelectorAll('.fn'), function (f) { return f.id; });
+      if (scope.id) ids.push(scope.id);
+      var l = edgesTouching(ids);
+      if (l.length) focus(l);
     });
-    card.addEventListener('mouseleave', clearFocus);
+    h.addEventListener('mouseleave', clearFocus);
   });
 
-  // ---- Fit to width ----
+  // Table
+  var tbody = $('rows');
+  GROUPS.forEach(function (g) {
+    var gr = document.createElement('tr'); gr.className = 'grp';
+    var gc = document.createElement('td'); gc.colSpan = 5; gc.textContent = g.name; gr.appendChild(gc); tbody.appendChild(gr);
+    g.edges.forEach(function (e) {
+      var tr = document.createElement('tr');
+      if (e.k === 'gap') tr.className = 'gaprow';
+      function td(cls, text) { var c = document.createElement('td'); c.className = cls; c.textContent = text; tr.appendChild(c); }
+      td('n', e.n);
+      td('ft', label(e.f) + ' → ' + label(e.t));
+      td('what', e.what);
+      td('kind', KIND[e.k]);
+      td('det', e.det);
+      tr.addEventListener('mouseenter', function () { focus([e]); });
+      tr.addEventListener('mouseleave', clearFocus);
+      tbody.appendChild(tr);
+    });
+  });
+
+  // Fit to width
   var fit = window.innerWidth >= 900;
   function applyFit() {
-    var s = fit ? Math.min(1, wrap.clientWidth / canvas.offsetWidth) : 1;
-    var tf = s < 1 ? 'scale(' + s + ')' : '';
-    canvas.style.transform = tf;
-    svg.style.transformOrigin = '0 0';
-    svg.style.transform = tf;
-    wrap.style.height = Math.ceil(canvas.offsetHeight * s) + 2 + 'px';
-    wrap.style.overflowX = s < 1 ? 'hidden' : 'auto';
+    scale = fit ? Math.min(1, wrap.clientWidth / canvas.offsetWidth) : 1;
+    canvas.style.transform = scale < 1 ? 'scale(' + scale + ')' : '';
+    wrap.style.height = Math.ceil(canvas.offsetHeight * scale) + 2 + 'px';
+    wrap.style.overflowX = scale < 1 ? 'hidden' : 'auto';
     fitBtn.textContent = fit ? 'Actual size' : 'Fit to width';
   }
   fitBtn.addEventListener('click', function () { fit = !fit; applyFit(); });
 
-  draw();
   applyFit();
+  draw();
   if ('ResizeObserver' in window) new ResizeObserver(applyFit).observe(wrap);
   else window.addEventListener('resize', applyFit);
 })();
