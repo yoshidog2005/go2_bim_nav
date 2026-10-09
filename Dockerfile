@@ -45,6 +45,7 @@ RUN git clone https://github.com/unitreerobotics/unitree_sdk2_python.git /opt/un
 
 # --- DDS / runtime defaults (interface, domain, peers are set at RUN time) ---
 ENV RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+ENV FASTRTPS_DEFAULT_PROFILES_FILE=/home/unitree/bim_nav_ws/fastdds_wifi.xml
 # Ignore host ~/.local site-packages (run_container.sh mounts $HOME).
 ENV PYTHONNOUSERSITE=1
 

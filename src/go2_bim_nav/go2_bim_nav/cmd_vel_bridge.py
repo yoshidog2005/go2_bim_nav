@@ -2,107 +2,212 @@
 """
 @author Brandon Lichter (Yoshidog)
 
-Bridge Nav2's /cmd_vel (geometry_msgs/msg/Twist) to the Go2's native
-Sport API (/api/sport/request, unitree_api/msg/Request).
+Bridge Nav2's /cmd_vel (geometry_msgs/msg/Twist) to the Go2 through
+unitree_sdk2py's ObstaclesAvoidClient - the same calls used by the
+test_vel_command.py script, run continuously.
 
-This is NOT a guessed schema - it's a direct translation of this robot's
-own /home/unitree/unitree_ros2/example/src/{include,src}/common/
-ros2_sport_client.{h,cpp}:
+Two independent DDS stacks live in this one process (same split as
+lidar_bridge.py):
 
-    const int32_t ROBOT_SPORT_API_ID_MOVE = 1008;
-    const int32_t ROBOT_SPORT_API_ID_STOPMOVE = 1003;
+  robot side   unitree_sdk2py -> CycloneDDS, domain 0, bound to `ethrobot`
+  ROS side     rclpy -> Fast DDS, $ROS_DOMAIN_ID
 
-    void SportClient::Move(Request &req, float vx, float vy, float vyaw) {
-      nlohmann::json js;
-      js["x"] = vx; js["y"] = vy; js["z"] = vyaw;
-      req.parameter = js.dump();
-      req.header.identity.api_id = ROBOT_SPORT_API_ID_MOVE;
-      req_puber_->publish(req);
-    }
+Do NOT set RMW_IMPLEMENTATION=rmw_cyclonedds_cpp here - the SDK's Cyclone
+config would capture the ROS participant too (see lidar_bridge.py).
 
-Requires unitree_ros2's workspace to be built AND sourced (for the
-unitree_api message package) in the same shell as this one - source
-unitree_ros2's install/setup.bash BEFORE this package's, every time.
+How it works:
+  * On start: switch the dog's obstacle-avoidance service on, then take
+    API control (UseRemoteCommandFromApi(True)) - exactly as the test
+    scripts do. While this node runs, the dog takes commands from here,
+    not from the handheld remote's sticks. Keep the remote in hand.
+  * /cmd_vel callbacks only store the latest command. A dedicated sender
+    thread owns every SDK call and sends Move() at a steady rate, so a
+    slow RPC can never stall ROS callbacks.
+  * Watchdog: if no /cmd_vel arrives for WATCHDOG_TIMEOUT_SEC the sender
+    commands zero velocity on its own (and keeps sending zeros while idle,
+    like the test script's keepalive).
+  * Hard velocity ceilings (ROS params) are applied regardless of what
+    Nav2 asks for.
+  * On exit: stop sending, command zero, release API control.
 
 Usage:
     ros2 run go2_bim_nav cmd_vel_bridge
+    ros2 run go2_bim_nav cmd_vel_bridge --ros-args -p max_vx:=0.4
 """
-import json
+import math
+import sys
+import threading
+import time
 
 import rclpy
+from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node
 from geometry_msgs.msg import Twist
 
-try:
-    from unitree_api.msg import Request
-except ImportError as e:
-    raise ImportError(
-        "unitree_api message package not found. Source unitree_ros2's "
-        "install/setup.bash (before this package's own) in this shell, "
-        "then try again."
-    ) from e
-
-ROBOT_SPORT_API_ID_STOPMOVE = 1003
-ROBOT_SPORT_API_ID_MOVE = 1008
+ROBOT_IFACE = "ethrobot"      # wired link to the Go2 (same as lidar_bridge.py)
+ROBOT_DOMAIN = 0              # CycloneDDS domain the robot uses
+SDK_TIMEOUT_SEC = 3.0         # RPC timeout, as in the test scripts
 
 # How long without a new /cmd_vel before this bridge stops the robot on its
-# own, rather than trusting a stale velocity command indefinitely - guards
-# against Nav2 (or this bridge's own upstream) dying mid-motion.
+# own - guards against Nav2 (or this bridge's upstream) dying mid-motion.
 WATCHDOG_TIMEOUT_SEC = 0.5
-WATCHDOG_CHECK_PERIOD_SEC = 0.1
+ACTIVE_PERIOD_SEC = 0.05      # 20 Hz while moving (matches controller_frequency)
+IDLE_PERIOD_SEC = 0.1         # 10 Hz of zero-velocity keepalive while idle
+
+
+def _clamp(value, lo, hi):
+    return max(lo, min(hi, value))
 
 
 class CmdVelBridge(Node):
-    def __init__(self):
-        super().__init__('cmd_vel_to_sport_bridge')
-        self._pub = self.create_publisher(Request, '/api/sport/request', 10)
+    def __init__(self, client):
+        super().__init__('cmd_vel_to_sdk_bridge')
+        self._client = client
+
+        # Hard ceilings, independent of Nav2's own limits (mirrors the
+        # velocity_smoother limits in nav2_params.yaml by default).
+        self.declare_parameter('max_vx', 0.8)
+        self.declare_parameter('min_vx', -0.4)
+        self.declare_parameter('max_vy', 0.3)
+        self.declare_parameter('max_vyaw', 1.0)
+        # The test scripts always switch the dog's avoidance service on
+        # before moving; keep that behaviour unless told otherwise.
+        self.declare_parameter('enable_avoidance', True)
+
+        self._max_vx = float(self.get_parameter('max_vx').value)
+        self._min_vx = float(self.get_parameter('min_vx').value)
+        self._max_vy = float(self.get_parameter('max_vy').value)
+        self._max_vyaw = float(self.get_parameter('max_vyaw').value)
+
+        self._lock = threading.Lock()
+        self._cmd = (0.0, 0.0, 0.0)
+        self._last_cmd_time = None  # time.monotonic() of newest /cmd_vel
+        self._stop_event = threading.Event()
+        self._thread = threading.Thread(target=self._send_loop, daemon=True)
+        self._control_taken = False
+
         self._sub = self.create_subscription(Twist, '/cmd_vel', self._on_cmd_vel, 10)
-        self._last_msg_time = None
-        self._stopped = True  # avoid re-sending StopMove every tick once already stopped
-        self.create_timer(WATCHDOG_CHECK_PERIOD_SEC, self._check_watchdog)
+
+    # ---- robot-side setup / teardown (main thread, before/after sender) ----
+
+    def take_control(self, timeout=5.0):
+        """Switch obstacle avoidance on, then take API control. False on failure."""
+        if self.get_parameter('enable_avoidance').value:
+            deadline = time.time() + timeout
+            enabled_ok = False
+            while time.time() < deadline:
+                code, enabled = self._client.SwitchGet()
+                if code == 0 and enabled:
+                    enabled_ok = True
+                    break
+                self._client.SwitchSet(True)
+                time.sleep(0.1)
+            if not enabled_ok:
+                self.get_logger().error(
+                    'Obstacle avoidance service did not respond. Is the dog standing?')
+                return False
+            self.get_logger().info('Obstacle avoidance ON')
+
+        self._client.UseRemoteCommandFromApi(True)
+        self._control_taken = True
+        time.sleep(0.3)
+        self.get_logger().info('API control taken')
+        return True
+
+    def start(self):
+        self._thread.start()
         self.get_logger().info(
-            'cmd_vel -> /api/sport/request bridge up '
-            '(Move api_id=1008, parameter={"x","y","z"})'
-        )
+            f'/cmd_vel -> ObstaclesAvoidClient.Move bridge up '
+            f'(ceilings: vx[{self._min_vx}, {self._max_vx}] '
+            f'vy +-{self._max_vy} vyaw +-{self._max_vyaw})')
+
+    def shutdown(self):
+        """Stop the sender, command zero, release control. Safe to call twice."""
+        self._stop_event.set()
+        if self._thread.is_alive():
+            self._thread.join(timeout=2.0)
+        try:
+            for _ in range(3):  # a few zeros so one dropped message can't leave it moving
+                self._client.Move(0.0, 0.0, 0.0)
+                time.sleep(0.05)
+            if self._control_taken:
+                self._client.UseRemoteCommandFromApi(False)
+                self._control_taken = False
+                print('API control released.')
+        except Exception as exc:
+            print(f'error during shutdown: {exc}', file=sys.stderr)
+
+    # ---- ROS side ----
 
     def _on_cmd_vel(self, msg: Twist):
-        self._last_msg_time = self.get_clock().now()
-        self._publish_move(msg.linear.x, msg.linear.y, msg.angular.z)
-        self._stopped = (msg.linear.x == 0.0 and msg.linear.y == 0.0 and msg.angular.z == 0.0)
+        vx, vy, vyaw = msg.linear.x, msg.linear.y, msg.angular.z
+        if not all(math.isfinite(v) for v in (vx, vy, vyaw)):
+            vx = vy = vyaw = 0.0  # never forward NaN/inf to the robot
+        cmd = (
+            _clamp(vx, self._min_vx, self._max_vx),
+            _clamp(vy, -self._max_vy, self._max_vy),
+            _clamp(vyaw, -self._max_vyaw, self._max_vyaw),
+        )
+        with self._lock:
+            self._cmd = cmd
+            self._last_cmd_time = time.monotonic()
 
-    def _publish_move(self, vx, vy, vyaw):
-        req = Request()
-        req.header.identity.api_id = ROBOT_SPORT_API_ID_MOVE
-        req.parameter = json.dumps({"x": vx, "y": vy, "z": vyaw})
-        self._pub.publish(req)
+    # ---- sender thread: the only place SDK Move() is called while running ----
 
-    def _publish_stop(self):
-        req = Request()
-        req.header.identity.api_id = ROBOT_SPORT_API_ID_STOPMOVE
-        self._pub.publish(req)
+    def _send_loop(self):
+        was_moving = False
+        while not self._stop_event.is_set():
+            with self._lock:
+                cmd = self._cmd
+                t = self._last_cmd_time
+            fresh = t is not None and (time.monotonic() - t) <= WATCHDOG_TIMEOUT_SEC
+            vx, vy, vyaw = cmd if fresh else (0.0, 0.0, 0.0)
 
-    def _check_watchdog(self):
-        if self._last_msg_time is None or self._stopped:
-            return
-        age_sec = (self.get_clock().now() - self._last_msg_time).nanoseconds / 1e9
-        if age_sec > WATCHDOG_TIMEOUT_SEC:
-            self.get_logger().warn(f'No /cmd_vel for {age_sec:.2f}s - sending StopMove')
-            self._publish_stop()
-            self._stopped = True
+            if was_moving and not fresh:
+                self.get_logger().warn(
+                    f'No /cmd_vel for {WATCHDOG_TIMEOUT_SEC:.1f}s - commanding stop')
+
+            try:
+                self._client.Move(vx, vy, vyaw)
+            except Exception as exc:
+                self.get_logger().error(f'Move failed: {exc}',
+                                        throttle_duration_sec=2.0)
+
+            moving = fresh and (vx != 0.0 or vy != 0.0 or vyaw != 0.0)
+            was_moving = moving
+            self._stop_event.wait(ACTIVE_PERIOD_SEC if moving else IDLE_PERIOD_SEC)
 
 
-def main():
-    rclpy.init()
-    node = CmdVelBridge()
+def main() -> int:
+    # Imported here (as in lidar_bridge.py) so this module stays importable
+    # on machines without the SDK.
+    from unitree_sdk2py.core.channel import ChannelFactoryInitialize
+    from unitree_sdk2py.go2.obstacles_avoid.obstacles_avoid_client import ObstaclesAvoidClient
+
+    rclpy.init(args=sys.argv)
+
+    ChannelFactoryInitialize(ROBOT_DOMAIN, ROBOT_IFACE)
+    client = ObstaclesAvoidClient()
+    client.SetTimeout(SDK_TIMEOUT_SEC)
+    client.Init()
+
+    node = CmdVelBridge(client)
+    exit_code = 0
     try:
-        rclpy.spin(node)
-    except KeyboardInterrupt:
-        pass
+        if not node.take_control():
+            exit_code = 1
+        else:
+            node.start()
+            rclpy.spin(node)
+    except (KeyboardInterrupt, ExternalShutdownException):
+        pass  # Ctrl-C, or SIGINT/SIGTERM from launch / `docker stop`
     finally:
-        node._publish_stop()  # don't leave the robot moving if this node dies
+        node.shutdown()
         node.destroy_node()
-        rclpy.shutdown()
+        if rclpy.ok():
+            rclpy.shutdown()
+    return exit_code
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  Fast DDS profile for ROS 2 nodes in the Go2's Docker container (go2_bim_nav) that talk to the PC over WiFi.
+  Fast DDS is kept on purpose there: CycloneDDS in that container interfered with the Go2's low-level control
+  (the Unitree SDK configures CycloneDDS for every domain).
+
+  Two settings, the same ones that made the PC <-> Go2 WiFi link work for CycloneDDS:
+   1. only the WiFi interface (wlan0, 192.168.123.46): the container runs with network=host and would otherwise
+      advertise addresses on ethrobot/docker0 too, which the PC can't reliably reach (ethrobot and wlan0 share
+      192.168.123.0/24);
+   2. UDP datagrams <= 1400 bytes: the lab WiFi drops fragmented IP packets. Fast DDS fragments larger messages
+      itself at the RTPS level.
+
+  Use (in every container shell that runs ROS nodes or ros2 CLI tools talking to the PC):
+      export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+      export FASTRTPS_DEFAULT_PROFILES_FILE=/path/to/fastdds_wifi.xml
+      export ROS_DOMAIN_ID=1                 # must match the PC side
+      ros2 daemon stop                       # the CLI daemon keeps the old settings otherwise
+  Every node in the container that should see each other must use this same profile (built-in shared-memory
+  transport is off, so local traffic also goes over the wlan0 address).
+  If the Go2's WiFi address changes, update the <address> below.
+-->
+<profiles xmlns="http://www.eprosima.com/XMLSchemas/fastRTPS_Profiles">
+  <transport_descriptors>
+    <transport_descriptor>
+      <transport_id>go2_wifi_udp</transport_id>
+      <type>UDPv4</type>
+      <maxMessageSize>1400</maxMessageSize>
+      <interfaceWhiteList>
+        <address>192.168.123.46</address>
+      </interfaceWhiteList>
+    </transport_descriptor>
+  </transport_descriptors>
+
+  <participant profile_name="go2_wifi_participant" is_default_profile="true">
+    <rtps>
+      <userTransports>
+        <transport_id>go2_wifi_udp</transport_id>
+      </userTransports>
+      <useBuiltinTransports>false</useBuiltinTransports>
+    </rtps>
+  </participant>
+</profiles>

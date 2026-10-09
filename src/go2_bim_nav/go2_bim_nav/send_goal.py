@@ -9,7 +9,7 @@ something calls the bt_navigator's navigate_to_pose action. This script is
 that caller.
 
 Usage:
-    # raw coordinates in the map (BIM) frame, metres + radians
+    # raw coordinates in the BIM frame (Nav2 plans in 'bim'), metres + radians
     ros2 run go2_bim_nav send_goal --x 3.5 --y 1.2 --yaw 0.0
 
     # named waypoint from a YAML file (see config/waypoints.yaml)
@@ -47,7 +47,7 @@ class GoalSender(Node):
         self._client = ActionClient(self, NavigateToPose, 'navigate_to_pose')
         self._feedback_count = 0
 
-    def send(self, x, y, yaw, frame_id='map'):
+    def send(self, x, y, yaw, frame_id='bim'):
         if not self._client.wait_for_server(timeout_sec=10.0):
             self.get_logger().error(
                 "navigate_to_pose action server not available - is Nav2's "
@@ -118,7 +118,9 @@ def main():
     parser.add_argument('--x', type=float, help='Target x in the map (BIM) frame, metres')
     parser.add_argument('--y', type=float, help='Target y in the map (BIM) frame, metres')
     parser.add_argument('--yaw', type=float, default=0.0, help='Target heading, radians')
-    parser.add_argument('--frame-id', default='map')
+    parser.add_argument('--frame-id', default='bim',
+                        help="Frame the x/y/yaw are expressed in. Default 'bim' (IFC / waypoints.yaml "
+                             "coordinates). Use 'map' for coordinates in the FAST-LIO map frame.")
     parser.add_argument('--waypoint', default=None, help='Named waypoint key from --waypoints-file')
     parser.add_argument('--waypoints-file', default=None, help='YAML file of name: {x, y, yaw}')
     args = parser.parse_args()
